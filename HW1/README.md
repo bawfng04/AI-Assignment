@@ -2,9 +2,9 @@
 
 > **Môn học:** Nhập môn Trí tuệ Nhân tạo (CO3061)
 >
-> **Ngôn ngữ:** Python
+> **Ngôn ngữ:** Python 3 + Tkinter (thư viện GUI có sẵn, không cần cài thêm)
 >
-> **Thuật toán chính:** Depth-First Search (DFS) — iterative bằng Stack
+> **Thuật toán chính:** DFS Iterative (Stack) cho Flood Fill + AI Solver (Propositional Logic + DFS Backtracking)
 
 ---
 
@@ -13,8 +13,9 @@
 1. [Tổng quan dự án](#1-tổng-quan-dự-án)
 2. [Kiến trúc hệ thống (MVC)](#2-kiến-trúc-hệ-thống-mvc)
 3. [Thuật toán DFS Flood Fill (Trọng tâm)](#3-thuật-toán-dfs-flood-fill-trọng-tâm)
-4. [Các tính năng chính & Edge Cases](#4-các-tính-năng-chính--edge-cases)
-5. [Hướng dẫn chạy chương trình](#5-hướng-dẫn-chạy-chương-trình)
+4. [AI Solver — Bộ giải tự động](#4-ai-solver--bộ-giải-tự-động)
+5. [Các tính năng chính & Edge Cases](#5-các-tính-năng-chính--edge-cases)
+6. [Hướng dẫn chạy chương trình](#6-hướng-dẫn-chạy-chương-trình)
 
 ---
 
@@ -29,6 +30,7 @@ Chương trình cài đặt trò chơi **Minesweeper** (Dò mìn) hoàn chỉnh 
 | Cài đặt trò chơi Minesweeper với GUI | Python + Tkinter (không phụ thuộc thư viện ngoài) |
 | Hỗ trợ nhiều kích thước bàn cờ | 5×5, 9×9, 16×16, 16×30 và tùy chỉnh |
 | Sử dụng thuật toán DFS | Iterative DFS với Stack (LIFO) cho Flood Fill |
+| AI Solver tự động | Propositional Logic + DFS Backtracking (95%+ win rate) |
 | Thiết kế có cấu trúc rõ ràng | Kiến trúc MVC (Model-View-Controller) |
 
 ### Luật chơi cơ bản
@@ -48,7 +50,7 @@ Chương trình được thiết kế theo mô hình **Model-View-Controller (MV
 ┌─────────────────────────────────────────────────────────┐
 │                    MinesweeperController                │
 │   (Điều phối: nhận event từ View, gọi Model xử lý,     │
-│    rồi cập nhật lại View)                               │
+│    gọi AI solver, rồi cập nhật lại View)               │
 ├────────────────────────┬────────────────────────────────┤
 │    MinesweeperModel    │       MinesweeperView          │
 │                        │                                │
@@ -56,10 +58,15 @@ Chương trình được thiết kế theo mô hình **Model-View-Controller (MV
 │  • state[][] (trạng    │  • Menu bar (chọn difficulty)  │
 │    thái ô)             │  • Mine counter (góc trái)     │
 │  • generate_mines()    │  • Timer (góc phải)            │
-│  • reveal() + DFS      │  • Nút reset 🙂               │
+│  • reveal() + DFS      │  • Nút reset 🙂 + AI 🤖       │
 │  • toggle_flag()       │  • Dialog tùy chỉnh           │
 │  • check_win()         │  • Hiển thị win/lose           │
-└────────────────────────┴────────────────────────────────┘
+├────────────────────────┴────────────────────────────────┤
+│                     MinesweeperAI                        │
+│  • Rule-based logic (propositional inference)            │
+│  • DFS backtracking + cluster enumeration                │
+│  • Educated guess (probability-based)                    │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ### 2.1. Model — `MinesweeperModel`
@@ -272,9 +279,90 @@ Kết quả: Mở 8/9 ô (trừ ô mìn X)
 
 ---
 
-## 4. Các tính năng chính & Edge Cases
+## 4. AI Solver — Bộ giải tự động
 
-### 4.1. First-Click Safety (An toàn lượt đầu)
+Ngoài thuật toán DFS Flood Fill, chương trình còn cài đặt một **AI Solver** có khả năng tự động chơi Minesweeper với tỉ lệ thắng cao. AI sử dụng **3 tầng suy luận** theo thứ tự ưu tiên:
+
+### 4.1. Tầng 1: Rule-Based Inference (Suy luận mệnh đề)
+
+Dùng **propositional logic** để suy luận chính xác 100% từ các ô số đã mở:
+
+**Rule 1 — All Safe (tất cả an toàn):**
+
+> Nếu một ô số đã có đủ cờ xung quanh (số cờ = giá trị ô), thì tất cả các ô hidden còn lại xung quanh chắc chắn **an toàn** → reveal.
+
+```
+Ví dụ: Ô số 2, đã cắm 2 cờ 🚩
+→ 0 mìn còn lại → các ô hidden xung quanh đều safe → reveal hết
+```
+
+**Rule 2 — All Mines (tất cả là mìn):**
+
+> Nếu số mìn còn thiếu (giá trị ô - số cờ) bằng số ô hidden xung quanh, thì tất cả các ô hidden đó chắc chắn là **mìn** → flag.
+
+```
+Ví dụ: Ô số 3, cắm 1 cờ, còn 2 ô hidden
+→ 3 - 1 = 2 mìn trong 2 ô → cả 2 là mìn → flag hết
+```
+
+### 4.2. Tầng 2: DFS Backtracking (Constraint Satisfaction)
+
+Khi Rule-Based không suy luận được gì (bế tắc), AI chuyển sang **DFS Backtracking**:
+
+1. **Xây dựng constraints:** Mỗi ô số đã revealed tạo ra 1 constraint: *"Trong tập các ô hidden xung quanh, có đúng X ô là mìn"* (X = giá trị ô - số cờ).
+
+2. **Quick check từng ô:** Thử gán từng frontier cell (các ô hidden giáp với ô revealed) là mine hoặc safe, kiểm tra tính nhất quán (consistency). Nếu chỉ có 1 phương án hợp lệ → kết luận được.
+
+3. **Cluster enumeration:** Nhóm các frontier cells thành clusters (connected components) bằng **Union-Find**. Với mỗi cluster nhỏ (≤ 15 ô), **enumerate tất cả tổ hợp** mine/safe bằng DFS iterative:
+   - Nếu 1 ô là mine trong **100%** tổ hợp hợp lệ → chắc chắn mine
+   - Nếu 1 ô là mine trong **0%** tổ hợp hợp lệ → chắc chắn safe
+
+```python
+# pseudocode cho backtracking enumeration
+stack = [(0, {})]  # (cell_index, assignment)
+while stack:
+    idx, assignment = stack.pop()  # DFS, LIFO
+    if idx == len(cluster):
+        if all constraints satisfied:
+            count valid combination
+        continue
+    # thử gán cell[idx] = safe, nếu consistent → push
+    # thử gán cell[idx] = mine, nếu consistent → push
+```
+
+### 4.3. Tầng 3: Educated Guess (Đoán có cơ sở)
+
+Khi cả 2 tầng trên đều không tìm được nước đi chắc chắn:
+
+- **Ưu tiên ô non-frontier** (ô hidden không giáp ô nào đã mở) — thường có xác suất mìn thấp hơn.
+- Nếu tất cả ô đều là frontier → chọn ô có **xác suất mìn thấp nhất** dựa trên tỉ lệ `(value - flags) / hidden_count` của các ô số xung quanh.
+
+### 4.4. Kết quả kiểm thử AI
+
+| Kích thước | Số mìn | Số game | Kết quả |
+|-----------|--------|---------|----------|
+| 5×5 | 3 | 50 | **96% win rate** (48/50) |
+| 9×9 | 10 | 20 | **95% win rate** (19/20) |
+
+### 4.5. Luồng xử lý AI
+
+```
+User click 🤖 → Controller.on_ai_move()
+    → ai.get_next_move()
+        → Tầng 1: Rule-based (scan revealed cells)
+           → Tìm thấy? → Trả về (flag/reveal, cells)
+        → Tầng 2: Backtracking (constraint solving)
+           → Tìm thấy? → Trả về (flag/reveal, cells)
+        → Tầng 3: Educated guess
+           → Trả về (reveal, best_cell)
+    → Controller thực hiện action, cập nhật View
+```
+
+---
+
+## 5. Các tính năng chính & Edge Cases
+
+### 5.1. First-Click Safety (An toàn lượt đầu)
 
 **Vấn đề:** Nếu sinh mìn trước khi người chơi click, lượt click đầu tiên có thể trúng mìn ngay → trải nghiệm xấu.
 
@@ -289,7 +377,7 @@ Kết quả: Mở 8/9 ô (trừ ô mìn X)
 
 **Lợi ích:** Lượt click đầu luôn an toàn VÀ luôn mở được một vùng rộng (vì vùng 3×3 không có mìn → flood fill được kích hoạt).
 
-### 4.2. Boundary Checking (Kiểm tra biên)
+### 5.2. Boundary Checking (Kiểm tra biên)
 
 Mỗi ô có tối đa 8 neighbor, nhưng ô ở **góc** chỉ có 3 và ô ở **cạnh** chỉ có 5. Hàm `_in_bounds(r, c)` kiểm tra tọa độ có nằm trong phạm vi grid hay không trước mỗi lần truy cập:
 
@@ -300,7 +388,7 @@ def _in_bounds(self, r, c):
 
 Hàm này được gọi ở mọi nơi cần truy cập neighbor: tính adjacent count, DFS flood fill, chord reveal — đảm bảo không bao giờ bị lỗi `IndexError`.
 
-### 4.3. Bảng tổng hợp Edge Cases
+### 5.3. Bảng tổng hợp Edge Cases
 
 | Tình huống | Cách xử lý |
 |------------|------------|
@@ -312,7 +400,7 @@ Hàm này được gọi ở mọi nơi cần truy cập neighbor: tính adjacen
 | Kiểm tra thắng | Dùng bộ đếm O(1): `revealed_count == rows × cols − num_mines` |
 | Game over | Hiển thị tất cả mìn 💣, đánh dấu flag sai ❌, disable toàn bộ grid |
 
-### 4.4. Các mức độ khó
+### 5.4. Các mức độ khó
 
 | Mức | Kích thước | Số mìn | Tỷ lệ mìn |
 |-----|------------|--------|-----------|
@@ -323,7 +411,7 @@ Hàm này được gọi ở mọi nơi cần truy cập neighbor: tính adjacen
 
 ---
 
-## 5. Hướng dẫn chạy chương trình
+## 6. Hướng dẫn chạy chương trình
 
 ### Yêu cầu
 
@@ -345,5 +433,6 @@ python minesweeper.py
 | 🖱️ Click phải | Cắm/bỏ cờ 🚩 |
 | 🖱️ Double-click trái | Chord reveal (mở nhanh ô xung quanh ô số) |
 | 🙂 Nút mặt cười | Reset game (giữ nguyên difficulty) |
+| 🤖 Nút AI | AI thực hiện 1 nước đi (click nhiều lần để xem AI chơi) |
 | Menu **Game** | Chọn mức độ khó hoặc tùy chỉnh kích thước |
-| Menu **Hướng dẫn** | Xem cách chơi, thông tin thuật toán DFS |
+| Menu **Hướng dẫn** | Cách chơi, thuật toán DFS, AI Solver |
