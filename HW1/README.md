@@ -58,7 +58,7 @@ Chương trình được thiết kế theo mô hình **Model-View-Controller (MV
 │  • state[][] (trạng    │  • Menu bar (chọn difficulty)  │
 │    thái ô)             │  • Mine counter (góc trái)     │
 │  • generate_mines()    │  • Timer (góc phải)            │
-│  • reveal() + DFS      │  • Nút reset 🙂 + AI 🤖       │
+│  • reveal() + DFS      │  • Nút 🙂 Reset + 💡 Hint + 🤖 Solve │
 │  • toggle_flag()       │  • Dialog tùy chỉnh           │
 │  • check_win()         │  • Hiển thị win/lose           │
 ├────────────────────────┴────────────────────────────────┤
@@ -94,7 +94,7 @@ Chịu trách nhiệm **hiển thị giao diện** bằng Tkinter:
 
 - **Grid nút bấm:** Mỗi ô trên bàn cờ là một `tk.Button`. Khi click, sự kiện được gửi cho Controller xử lý.
 - **Menu bar:** Cung cấp các preset độ khó (Dễ, Trung bình, Khó) và tùy chỉnh kích thước.
-- **Status bar:** Hiển thị bộ đếm mìn còn lại (trái), nút reset mặt cười (giữa), timer (phải).
+- **Status bar:** Hiển thị bộ đếm mìn còn lại (trái), các nút 🙂 Reset / 💡 Hint / 🤖 Solve (giữa), timer (phải).
 - **Màu số:** Mỗi con số 1–8 có màu riêng theo chuẩn Minesweeper gốc (1=xanh dương, 2=xanh lá, 3=đỏ, …).
 
 ### 2.3. Controller — `MinesweeperController`
@@ -347,15 +347,17 @@ Khi cả 2 tầng trên đều không tìm được nước đi chắc chắn:
 ### 4.5. Luồng xử lý AI
 
 ```
-User click 🤖 → Controller.on_ai_move()
+User click 💡 Hint → Controller.on_ai_hint()
     → ai.get_next_move()
-        → Tầng 1: Rule-based (scan revealed cells)
-           → Tìm thấy? → Trả về (flag/reveal, cells)
-        → Tầng 2: Backtracking (constraint solving)
-           → Tìm thấy? → Trả về (flag/reveal, cells)
+        → Tầng 1: Rule-based
+        → Tầng 2: Backtracking + cluster enumeration
         → Tầng 3: Educated guess
-           → Trả về (reveal, best_cell)
-    → Controller thực hiện action, cập nhật View
+    → Controller thực hiện 1 action (reveal/flag), cập nhật View
+
+User click 🤖 Solve → Controller.on_ai_solve()
+    → chạy nhiều bước bằng after() để UI không bị đơ
+    → lặp: ai.get_next_move() → thực hiện action → cập nhật View
+    → dừng khi win/lose/không còn nước đi
 ```
 
 ---
@@ -441,6 +443,7 @@ python minesweeper.py
 | 🖱️ Click phải | Cắm/bỏ cờ 🚩 |
 | 🖱️ Double-click trái | Chord reveal (mở nhanh ô xung quanh ô số) |
 | 🙂 Nút mặt cười | Reset game (giữ nguyên difficulty) |
-| 🤖 Nút AI | AI thực hiện 1 nước đi (click nhiều lần để xem AI chơi) |
+| 💡 Hint | AI thực hiện 1 bước (step-by-step) |
+| 🤖 Solve | AI tự chơi liên tục cho tới khi kết thúc |
 | Menu **Game** | Chọn mức độ khó hoặc tùy chỉnh kích thước |
 | Menu **Hướng dẫn** | Cách chơi, thuật toán DFS, AI Solver |

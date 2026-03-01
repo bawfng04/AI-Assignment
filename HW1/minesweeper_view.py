@@ -37,6 +37,7 @@ class MinesweeperView:
         self.on_new_game = None
         self.on_reset = None
         self.on_ai_move = None
+        self.on_ai_hint = None
 
         self.buttons = []
 
@@ -78,6 +79,22 @@ class MinesweeperView:
         )
         self.reset_button.pack(side=tk.LEFT, padx=(0, 6))
 
+        # nút Hint — AI đi 1 bước (step-by-step)
+        self.hint_button = tk.Button(
+            self.center_frame,
+            text="💡",
+            font=("Segoe UI Emoji", 14),
+            width=2,
+            height=1,
+            relief=tk.RAISED,
+            bd=2,
+            bg="#ADD8E6",  # light blue
+            activebackground="#9CCBE0",
+            command=self._on_ai_hint_click,
+        )
+        self.hint_button.pack(side=tk.LEFT, padx=(0, 6))
+
+        # nút Solve — AI tự giải hết (autoplay)
         self.ai_button = tk.Button(
             self.center_frame,
             text="🤖",
@@ -153,6 +170,10 @@ class MinesweeperView:
         if self.on_ai_move:
             self.on_ai_move()
 
+    def _on_ai_hint_click(self) -> None:
+        if self.on_ai_hint:
+            self.on_ai_hint()
+
     def _show_custom_dialog(self) -> None:
         dialog = tk.Toplevel(self.root)
         dialog.title("Tùy chỉnh kích thước")
@@ -227,41 +248,36 @@ class MinesweeperView:
             "🎮 CÁCH CHƠI MINESWEEPER\n\n"
             "🖱️ Click trái: Mở ô\n"
             "🖱️ Click phải: Cắm/bỏ cờ 🚩\n"
-            "🖱️ Double click trái: Chord reveal\n"
-            "   (mở nhanh các ô xung quanh ô số\n"
-            "    khi đã cắm đủ cờ)\n\n"
+            "🖱️ Double-click trái: Chord reveal\n"
+            "   (mở nhanh các ô xung quanh ô số khi đã cắm đủ cờ)\n\n"
+            "🔘 NÚT NHANH (trên thanh trạng thái):\n"
+            "• 🙂 Reset: Chơi lại (giữ nguyên độ khó)\n"
+            "• 💡 Hint: AI đi 1 bước (step-by-step)\n"
+            "• 🤖 Solve: AI tự chơi đến khi kết thúc\n\n"
             "📋 LUẬT CHƠI:\n"
-            "• Mở tất cả ô không có mìn để thắng\n"
+            "• Thắng: Mở tất cả ô không có mìn\n"
+            "• Thua: Mở trúng ô có mìn\n"
             "• Số trên ô = số mìn xung quanh (8 hướng)\n"
-            "• Ô trống (0) sẽ tự mở các ô trống liền kề\n"
-            "• Click đầu tiên luôn an toàn\n\n"
-            "⚙️ THUẬT TOÁN:\n"
-            "• Flood Fill dùng DFS (Depth-First Search)\n"
-            "• Cài đặt iterative bằng Stack (LIFO)"
+            "• Ô trống (0) sẽ tự mở vùng trống liền kề (flood fill)\n"
+            "• Click đầu tiên luôn an toàn (vùng 3×3 không có mìn)"
         )
         messagebox.showinfo("Hướng dẫn", help_text)
 
     def _show_dfs_info(self) -> None:
         dfs_text = (
-            "🔍 THUẬT TOÁN DFS FLOOD FILL\n\n"
-            "Depth-First Search (DFS) là thuật toán\n"
-            "duyệt đồ thị đi sâu trước.\n\n"
-            "📐 CÀI ĐẶT TRONG MINESWEEPER:\n"
-            "• Dùng Stack (LIFO) — iterative\n"
-            "• Không dùng đệ quy (tránh stack overflow)\n"
-            "• Mỗi ô là 1 node trong đồ thị\n"
-            "• 8 ô xung quanh là các cạnh kề\n\n"
-            "📝 PSEUDOCODE:\n"
-            "  stack = [(start_row, start_col)]\n"
-            "  while stack not empty:\n"
-            "      (r, c) = stack.pop()  ← LIFO\n"
-            "      if đã visit → skip\n"
-            "      mark revealed\n"
-            "      if value == 0:  ← ô trống\n"
-            "          push 8 neighbors vào stack\n\n"
-            "⏱️ ĐỘ PHỨC TẠP:\n"
-            "• Thời gian: O(V + E) — V = số ô, E = số cạnh\n"
-            "• Không gian: O(V) — stack + visited set"
+            "🔍 DFS FLOOD FILL (MỞ VÙNG TRỐNG)\n\n"
+            "Khi bạn mở 1 ô có giá trị 0, game sẽ tự động\n"
+            "mở lan sang các ô trống kề nhau, và dừng ở biên là ô số.\n\n"
+            "📐 CÀI ĐẶT:\n"
+            "• DFS dạng iterative với Stack (LIFO)\n"
+            "• Không dùng đệ quy → tránh RecursionError\n"
+            "• Mỗi ô là 1 node, 8 ô xung quanh là neighbors\n\n"
+            "📝 Ý TƯỞNG:\n"
+            "stack = [ô bắt đầu]\n"
+            "while stack còn phần tử:\n"
+            "  pop 1 ô\n"
+            "  nếu ô trống (0) → push 8 neighbors\n\n"
+            "⏱️ ĐỘ PHỨC TẠP (xấp xỉ): O(rows×cols)"
         )
         messagebox.showinfo("Thuật toán DFS", dfs_text)
 
@@ -282,8 +298,10 @@ class MinesweeperView:
             "• Chọn ô có xác suất mìn thấp nhất\n"
             "• Ưu tiên ô không giáp ô đã mở\n\n"
             "💡 CÁCH DÙNG:\n"
-            "• Click 🤖 để AI đi 1 nước\n"
-            "• AI sẽ reveal hoặc flag tùy logic"
+            "• Click 💡 để AI đi 1 nước (step-by-step)\n"
+            "• Click 🤖 để AI tự giải hết màn chơi\n"
+            "• AI sẽ reveal hoặc flag tùy logic\n\n"
+            "Gợi ý: Nếu muốn dừng Solve, bạn có thể bấm 🙂 Reset để chơi lại."
         )
         messagebox.showinfo("AI Solver", ai_text)
 

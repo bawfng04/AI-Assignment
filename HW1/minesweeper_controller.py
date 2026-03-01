@@ -29,17 +29,23 @@ class MinesweeperController:
 
         self.ai = None
 
+        # AI autoplay (giải tự động toàn bộ)
+        self.ai_autoplay_running = False
+
         self.view.on_left_click = self.on_left_click
         self.view.on_right_click = self.on_right_click
         self.view.on_double_click = self.on_double_click
         self.view.on_new_game = self.new_game
         self.view.on_reset = self.reset_game
-        self.view.on_ai_move = self.on_ai_move
+        # 🤖 Solve (autoplay) + 💡 Hint (1 bước)
+        self.view.on_ai_move = self.on_ai_solve
+        self.view.on_ai_hint = self.on_ai_hint
 
         self.new_game(self.rows, self.cols, self.num_mines)
 
     def new_game(self, rows: int, cols: int, mines: int) -> None:
         self._stop_timer()
+        self.ai_autoplay_running = False
 
         self.rows = rows
         self.cols = cols
@@ -127,16 +133,75 @@ class MinesweeperController:
             self._auto_flag_mines()
             self.view.show_win()
 
-    def on_ai_move(self) -> None:
+    def on_ai_hint(self) -> None:
+        """AI đi 1 bước (step-by-step) như logic ban đầu."""
         if not self.model or self.model.game_over or self.model.won:
+            return
+
+        # không chen ngang khi autoplay đang chạy
+        if self.ai_autoplay_running:
             return
 
         if not self.ai:
             self.ai = MinesweeperAI(self.model)
 
         move = self.ai.get_next_move()
-
         if not move:
+            messagebox.showinfo(
+                "🤖 AI",
+                "AI không tìm được nước đi nào!\nCó thể phải đoán hoặc game đã kết thúc.",
+            )
+            return
+
+        action, cells = move
+
+        if action == "reveal":
+            for r, c in cells:
+                if self.model.game_over or self.model.won:
+                    break
+                self.view.highlight_ai_move(r, c, "reveal")
+                self.on_left_click(r, c)
+
+        elif action == "flag":
+            for r, c in cells:
+                if self.model.game_over or self.model.won:
+                    break
+                if self.model.state[r][c] == "hidden":
+                    self.view.highlight_ai_move(r, c, "flag")
+                    self.on_right_click(r, c)
+
+    def on_ai_solve(self) -> None:
+        if not self.model or self.model.game_over or self.model.won:
+            return
+
+        if not self.ai:
+            self.ai = MinesweeperAI(self.model)
+
+        # bấm 1 lần: AI tự chơi cho tới khi kết thúc
+        if self.ai_autoplay_running:
+            return
+        self.ai_autoplay_running = True
+        self._ai_autoplay_step()
+
+    # backward-compat: các chỗ cũ gọi on_ai_move sẽ chạy Solve
+    def on_ai_move(self) -> None:
+        self.on_ai_solve()
+
+    def _ai_autoplay_step(self) -> None:
+        """Chạy AI theo từng bước bằng after() để không làm đơ UI."""
+        if not self.ai_autoplay_running:
+            return
+
+        if not self.model or self.model.game_over or self.model.won:
+            self.ai_autoplay_running = False
+            return
+
+        if not self.ai:
+            self.ai = MinesweeperAI(self.model)
+
+        move = self.ai.get_next_move()
+        if not move:
+            self.ai_autoplay_running = False
             messagebox.showinfo(
                 "🤖 AI",
                 "AI không tìm được nước đi nào!\nGame có thể đã kết thúc.",
@@ -159,6 +224,13 @@ class MinesweeperController:
                 if self.model.state[r][c] == "hidden":
                     self.view.highlight_ai_move(r, c, "flag")
                     self.on_right_click(r, c)
+
+        if self.model.game_over or self.model.won:
+            self.ai_autoplay_running = False
+            return
+
+        # delay nhỏ để UI kịp vẽ lại và người dùng quan sát
+        self.root.after(20, self._ai_autoplay_step)
 
     def _auto_flag_mines(self) -> None:
         for r in range(self.model.rows):
