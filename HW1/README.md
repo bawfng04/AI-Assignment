@@ -425,6 +425,14 @@ Hàm này được gọi ở mọi nơi cần truy cập neighbor: tính adjacen
 python minesweeper.py
 ```
 
+### Cấu trúc file (sau refactor)
+
+- `minesweeper.py`: entrypoint để chạy game (giữ lệnh chạy như cũ)
+- `minesweeper_model.py`: Model (logic game)
+- `minesweeper_ai.py`: AI solver
+- `minesweeper_view.py`: View (Tkinter UI)
+- `minesweeper_controller.py`: Controller (kết nối Model–View–AI)
+
 ### Điều khiển
 
 | Thao tác | Chức năng |
