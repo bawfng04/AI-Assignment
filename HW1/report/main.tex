@@ -4,8 +4,20 @@
 \usepackage[utf8]{inputenc}    % Use utf8 input encoding
 \usepackage[T5]{fontenc}       % Output font encoding for Vietnamese
 \usepackage[vietnamese]{babel} % Vietnamese language support
-\usepackage{mathptmx}          % Times Roman font
-\usepackage[top=2cm,bottom=2cm,left=3cm,right=2cm]{geometry}
+\usepackage{amsmath}           % Math fonts and text in math mode
+\usepackage{mathptmx}          % Times New Roman font equivalent
+\usepackage{geometry}
+\geometry{
+    top=2.54cm,
+    bottom=2.54cm,
+    left=2.54cm,
+    right=2.54cm
+}
+\usepackage{setspace}          % Line spacing
+\usepackage{parskip}           % Paragraph spacing
+\setlength{\parskip}{6pt}      % 6pt paragraph spacing
+\setstretch{1.5}               % 1.5 line spacing
+
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
@@ -15,8 +27,16 @@
 \usepackage{tabularx}
 \usepackage{caption}
 
-% --- Document Formatting ---
-\linespread{1.3} % 1.5 line spacing equivalent
+% --- Document Formatting / Font Sizes ---
+\titleformat{\section}{\fontsize{16pt}{19pt}\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\fontsize{14pt}{17pt}\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\fontsize{13pt}{16pt}\bfseries}{\thesubsubsection}{1em}{}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\fontsize{11pt}{13pt}\selectfont\thepage}
+\renewcommand{\headrulewidth}{0pt}
 
 % Define colors for code listings
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -60,18 +80,30 @@
 % --- Cover Page ---
 \input{sections/00_cover}
 
+% --- Abstract ---
+\newpage
+\input{sections/00_abstract}
+
 % --- Table of Contents ---
 \newpage
 \pagenumbering{roman}
 \tableofcontents
+\newpage
+\listoffigures
+\newpage
+\listoftables
 \newpage
 
 % --- Main Content ---
 \pagenumbering{arabic}
 
 \input{sections/01_introduction}
-\input{sections/02_architecture_design}
-\input{sections/03_algorithms}
-\input{sections/04_contributions}
+\input{sections/02_related_work}
+\input{sections/03_background}
+\input{sections/04_methodologies}
+\input{sections/05_results}
+\input{sections/06_limitations}
+\input{sections/07_conclusion}
+\input{sections/08_references}
 
 \end{document}

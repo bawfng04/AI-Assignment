@@ -13,8 +13,37 @@ Trò chơi được xây dựng dựa trên mô hình \textbf{Model-View-Control
     Quản lý Giao diện Người dùng (GUI) được cài đặt chủ yếu thông qua thư viện \texttt{Tkinter}. Thành phần này vẽ lưới các nút bấm tương tác, thanh trạng thái (chứa bộ đếm mìn, nút khởi động lại hình mặt cười, và đồng hồ đếm giờ), cùng các hộp thoại. View hoàn toàn không biết gì về logic bên trong của trò chơi.
     
     \item \textbf{Controller (\texttt{MinesweeperController}):}
-    Đóng vai trò trung gian. Nó lắng nghe các sự kiện chuột (click trái, click phải, double-click) từ View, yêu cầu Model cập nhật trạng thái dựa trên các tương tác đó, và sau đó điều khiển View vẽ lại để phản ánh trạng thái mới (ví dụ: hiển thị một con số hoặc một lá cờ).
+    Đóng vai trò trung gian. Nó lắng nghe các sự kiện chuột (click trái, click phải, double-click) từ View, yêu cầu Model hoặc AI cập nhật trạng thái dựa trên các tương tác đó, và sau đó điều khiển View vẽ lại (cập nhật text, icon mìn, màu cờ) để phản ánh trạng thái mới.
 \end{itemize}
+
+\subsection{Tổ chức mã nguồn (Project Structure)}
+
+Để tuân thủ triệt để mô hình MVC và giúp mã dễ quản lý khi mở rộng quy mô dự án, mã nguồn được chia tách làm 5 tệp tin chính độc lập nhau:
+\begin{enumerate}
+    \item \textbf{\texttt{minesweeper.py}}: Tệp thực thi chính (Entrypoint), khởi tạo đối tượng Controller và bắt đầu vòng lặp ứng dụng Tkinter.
+    \item \textbf{\texttt{minesweeper\_model.py}}: Thuần túy chứa các hàm tính toán, sinh mìn, và lưu trữ trạng thái lưới (Không import bất kỳ thư viện giao diện nào).
+    \item \textbf{\texttt{minesweeper\_view.py}}: Xử lý giao diện Tkinter, tiếp nhận thao tác click chuột.
+    \item \textbf{\texttt{minesweeper\_controller.py}}: Kết nối Model và View, thiết lập bộ đếm giờ (timer) và gọi AI.
+    \item \textbf{\texttt{minesweeper\_ai.py}}: Hoàn toàn tách biệt khỏi logic trò chơi, chỉ nhận Model (dạng chỉ đọc) để phân tích bảng và đưa ra các nước đi tư vấn.
+\end{enumerate}
+
+\subsection{Biểu diễn trạng thái Dữ liệu (State Representation)}
+
+Trạng thái lưới (Grid) của trò chơi được quản lý trong Model thông qua hai ma trận kích thước $R \times C$:
+\begin{itemize}
+    \item \textbf{Ma trận Dữ liệu Cứng (\texttt{self.board[r][c]}):} Lưu trữ thực tại khách quan được sinh ra lúc đầu.
+    \begin{itemize}
+        \item \texttt{-1}: Ô có chứa Mìn.
+        \item \texttt{0} đến \texttt{8}: Số lượng mìn nằm ở 8 ô liền kề.
+    \end{itemize}
+    \item \textbf{Ma trận Trạng thái Trực quan (\texttt{self.state[r][c]}):} Lưu trữ tương tác hiện tại của người chơi.
+    \begin{itemize}
+        \item \texttt{"hidden"}: Ô chưa được mở.
+        \item \texttt{"revealed"}: Ô đã được mở.
+        \item \texttt{"flagged"}: Ô đã bị cắm cờ.
+    \end{itemize}
+\end{itemize}
+Việc chia tách Dữ liệu Cứng và Trạng thái Trực quan giúp thuật toán dễ dàng kiểm soát được quá trình người chơi thao tác, không bị nhầm lẫn giữa dữ liệu thật và quyết định hiện thời của người chơi.
 
 \subsection{Chiến lược "An toàn lượt đầu" (First-Click Safety)}
 

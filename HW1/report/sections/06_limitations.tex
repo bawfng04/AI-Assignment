@@ -1,0 +1,10 @@
+% !TEX root = ../main.tex
+\section{Thách thức \& Hạn chế / Challenges \& Limitations}
+
+Mặc dù giải pháp đưa ra hoạt động mạnh mẽ, nhưng chúng tôi vẫn phải ghi nhận một số hạn chế nhất định và các thách thức còn tồn tại trong quá trình thực hiện:
+
+\begin{itemize}
+    \item \textbf{Cạnh tranh tài nguyên Đồ họa:} Động cơ giải đố AI đang chạy đồng bộ trên Thread (Luồng) chính cùng với vòng lặp sự kiện đồ họa (\texttt{mainloop} của Tkinter). Mặc dù ứng dụng sử dụng các Task nhỏ bẻ vụn bằng \texttt{after()} thay vì một vòng lặp \texttt{while True} khóa chết phần mềm, việc xử lý Constraint quá sâu khi số lượng mìn dày ở chế độ siêu khó có nguy cơ làm gián đoạn nhẹ khung hình GUI. Chuyển AI Solver sang luồng bất đồng bộ (Thread/Async) sẽ khắc phục triệt để.
+    \item \textbf{Hạn chế của xác suất cục bộ Tầng 3:} Hiện tại đánh giá $P(Mine)$ Tầng 3 chỉ dựa trên các cụm biên bị cô lập với độ sâu tính toán nông để tiết kiệm chi phí tìm kiếm. Điều này bỏ qua một lượng phần trăm độ chính xác tổng thể thông qua phương pháp đếm các trạng thái hợp lệ của \textit{Toàn bộ các cụm trên bảng}.
+    \item \textbf{Giao diện tĩnh:} Thư viện tiêu chuẩn Tkinter khá cũ và kén các hiệu ứng động mượt mà. Đồ họa hiện tại dù màu sắc và rõ ràng, nhưng các thiết kế Animation hay hạt (Particles) cháy nổ là bất khả thi nếu không chuyển qua các Framework mạnh về render nhúng như Pygame.
+\end{itemize}

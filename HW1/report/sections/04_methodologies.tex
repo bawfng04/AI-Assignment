@@ -1,0 +1,44 @@
+% !TEX root = ../main.tex
+\section{Phương án đề xuất / Methodologies}
+
+Để hiện thực hóa trò chơi Minesweeper và tích hợp AI Solver, báo cáo đề xuất một hệ thống phần mềm bao gồm các thành phần kiến trúc linh hoạt và các bộ giải thuật tối ưu.
+
+\subsection{Kiến trúc \& Thiết kế (Architecture \& Design)}
+
+Trò chơi được xây dựng dựa trên mô hình \textbf{Model-View-Controller (MVC)} nhằm phân tách rạch ròi giữa logic xử lý bên trong, giao diện người dùng và bộ xử lý tương tác. Việc phân tách này giúp mã nguồn dễ bảo trì và AI Solver độc lập với Giao diện.
+
+\subsubsection{Các thành phần và Tổ chức mã nguồn}
+\begin{itemize}
+    \item \textbf{Model (\texttt{minesweeper\_model.py}):} Đại diện cho trạng thái của bàn cờ. Lưu trữ vị trí mìn, số lượng mìn xung quanh mỗi ô, và trạng thái tương tác của người chơi. Chịu trách nhiệm thực thi các quy tắc cốt lõi bổ trợ.
+    \item \textbf{View (\texttt{minesweeper\_view.py}):} Quản lý Giao diện (\texttt{Tkinter}). Vẽ lưới nút bấm, thanh trạng thái (bộ đếm mìn, đồng hồ). Hoàn toàn không biết logic trò chơi.
+    \item \textbf{Controller (\texttt{minesweeper\_controller.py}):} Lắng nghe sự kiện (click trái/phải), yêu cầu Model hoặc AI cập nhật trạng thái, rồi ra lệnh View vẽ lại.
+    \item \textbf{AI Solver (\texttt{minesweeper\_ai.py}):} Module độc lập, nhận dữ liệu read-only từ Model, trả về nước đi gợi ý tiếp theo.
+\end{itemize}
+
+\subsubsection{Chiến lược "An toàn lượt đầu" (First-Click Safety)}
+Để tránh việc người chơi thua ngay lượt click đầu tiên, hệ thống áp dụng \textbf{sinh mìn độ trễ}. Khi click trái đầu tiên tọa độ $(r, c)$, một vùng an toàn $3 \times 3$ được thiết lập xung quanh nó. Mìn chỉ được rải ngẫu nhiên ở các ô nằm ngoài khu vực này, đảm bảo lượt mở đầu luôn an toàn và tạo ra một vùng trống đủ lớn để bắt đầu suy luận logic.
+
+\subsection{Thuật toán Depth-First Search cho cơ chế Flood Fill}
+Khi click vào một ô rỗng (số 0), luật chơi yêu cầu mở tất cả các ô rỗng liền kề cho đến khi chạm tới các ô có số. Quá trình này được thực hiện bằng thuật toán tìm kiếm \textbf{Iterative DFS (Không đệ quy)}. Ngôn ngữ Python giới hạn đệ quy ở khoảng 1000 khung lệnh, do đó trên bảng mìn lớn (như $30\times30$ với 900 ô), hàm đệ quy sâu sẽ gây \texttt{RecursionError}. Sử dụng một Mảng (List) làm cấu trúc \textbf{Stack} giúp khắc phục hoàn toàn vấn đề này.
+Độ phức tạp mở khóa không gian của thuật toán này là tuyến tính theo tổng số ô kết nối $O(V) \approx O(R \times C)$.
+
+\subsection{AI Solver 3 Tầng}
+Tác tử AI tự giải quyết bàn cờ bằng cách kết hợp ba luồng tư duy từ tĩnh đến động, tương tự như các kỹ thuật phân tích con người:
+
+\subsubsection{Tầng 1: Propositional Logic (Suy luận Mệnh đề)}
+Bot quét toàn bảng, xét các ô số $V$ đã mở nằm kề với $F$ lá cờ và $H$ ô bí mật:
+\begin{itemize}
+    \item \textbf{All Safe:} Nếu $V = F \implies H$ ô còn lại là an toàn (Mở).
+    \item \textbf{All Mines:} Nếu $V - F = |H| \implies \text{Tất cả } H \text{ ô còn lại là mìn (Cắm cờ)}$.
+\end{itemize}
+
+\subsubsection{Tầng 2: DFS Backtracking (Thỏa mãn Ràng buộc)}
+Khi Tầng 1 hết dữ kiện, thuật toán tạo các phương trình ràng buộc lên tập ô "tiền tuyến" chưa mở. AI thực hiện:
+\begin{enumerate}
+    \item \textbf{Union-Find:} Chia nhỏ tiền tuyến thành các cụm (cluster) không liên quan để phân rã không gian.
+    \item \textbf{Backtracking cực bộ:} Tại mỗi cụm (kích thước $K$), thuật toán đệ quy gán thử ngẫu nhiên toàn bộ $2^K$ cấu hình $\texttt{Mìn/An Toàn}$. Cấu hình nào vi phạm quy tắc ô số sẽ bị Cắt tỉa (Prune) sớm.
+    \item Với các tập cấu hình hợp lệ cuối cùng, nếu ô nào mang giá trị \texttt{True} trong mọi trường hợp, đó chắc chắn là Mìn. Ở chiều ngược lại, nếu $0\%$, nó khẳng định An toàn.
+\end{enumerate}
+
+\subsubsection{Tầng 3: Educated Guess (Dự đoán Xác suất)}
+Nếu mọi suy luận logic đều không thể đưa ra đáp án tuyệt đối do thiếu dữ kiện (Các case 50/50 bắt buộc), AI tính xác suất có mìn $P(Mine)$ cao nhất từ các phương trình ràng buộc quanh mọi ô chưa mở ở tiền tuyến. Sau đó so với tỷ lệ mìn mù của bảng. Nó rốt cục sẽ hy sinh \textbf{click mù vào ô có xác suất rủi ro chứa mìn nhỏ nhất}. Mặc dù mang tính "đoán", thuật toán này tối ưu triệt để độ sống sót cực độ so với chọn ngẫu nhiên.

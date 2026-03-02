@@ -1,0 +1,13 @@
+% !TEX root = ../main.tex
+\section{Nghiên cứu liên quan / Related work}
+
+Việc giải quyết trò chơi Minesweeper đã thu hút sự chú ý của nhiều nhà nghiên cứu trong lĩnh vực Khoa học Máy tính và Trí tuệ Nhân tạo. Bài toán xác định tính nhất quán của một bảng Minesweeper nhất định (liệu có tồn tại một cách cấu hình mìn hợp lệ với các dữ kiện đang hiển thị hay không) đã được Kaye (2000) chứng minh là thuộc lớp bài toán NP-đầy đủ (NP-complete). Điều này ngụ ý rằng, khi kích thước bảng và số lượng mìn tăng lên, thời gian để tìm ra lời giải chính xác trong các tình huống xấu nhất sẽ tăng theo cấp số nhân.
+
+Các cách tiếp cận phổ biến để giải Minesweeper bằng AI thường rơi vào các danh mục sau:
+\begin{itemize}
+    \item \textbf{Hệ chuyên gia dựa trên luật (Rule-based Systems):} Sử dụng các quy tắc suy diễn mệnh đề tương tự như cách con người chơi (ví dụ: Quy tắc Tất cả An toàn, Quy tắc Tất cả là Mìn). Cách tiếp cận này rất nhanh nhưng thường gục ngã trước các thế cờ phức tạp đòi hỏi suy luận liên kết nhiều cụm số.
+    \item \textbf{Bài toán Thỏa mãn Ràng buộc (Constraint Satisfaction Problems - CSP):} Bảng Minesweeper có thể được mô hình hóa thành một mạng lưới các biến boolean (có mìn hoặc không có mìn) với các ràng buộc toán học dạng tổng sinh ra từ các ô số. Kỹ thuật Backtracking kết hợp cắt tỉa (Pruning) thường được áp dụng ở mức độ cụm cục bộ để xác định chắc chắn vị trí của mìn.
+    \item \textbf{Mô hình Xác suất và Học máy (Probabilistic \& Machine Learning):} Ở những thế cờ không thể xác định chắc chắn 100\% bằng logic, các thuật toán dự đoán xác suất (như Mạng Bayes) hoặc các mô hình Học tăng cường (Reinforcement Learning) có thể được sử dụng để đưa ra nước đi an toàn nhất. Tuy nhiên, các kỹ thuật Học sâu (Deep Learning) thường gặp khó khăn trong việc nắm bắt tuyệt đối tính logic cứng nhắc của trò chơi này so với hệ thống dựa trên luật.
+\end{itemize}
+
+Trong bài tập này, chúng tôi chọn cách tiếp cận lai (Hybrid Approach) phổ biến và hiệu quả nhất cho Minesweeper: kết hợp tốc độ của Suy luận Luật, độ sâu của CSP Backtracking và khả năng phòng rủi ro của tính toán Xác suất.

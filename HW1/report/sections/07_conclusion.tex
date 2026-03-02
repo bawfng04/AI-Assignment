@@ -1,0 +1,17 @@
+% !TEX root = ../main.tex
+\section{Kết luận \& Hướng phát triển trong tương lai / Conclusion and Future Works}
+
+\subsection{Kết luận}
+Dự án đã hoàn thành toàn bộ các yêu cầu cơ bản và nâng cao của bài tập lớn. Các kết quả đạt được bao gồm:
+\begin{itemize}
+    \item Cài đặt thành công trò chơi Minesweeper nguyên bản bằng Python và thư viện Tkinter thuần túy, có giao diện thiết kế chuẩn mực theo mô hình MVC.
+    \item Triển khai thuật toán "Flood Fill" bằng Iterative DFS (Sử dụng Stack) siêu tốc và né tránh ranh giới đệ quy lỗi của Python.
+    \item Cài đặt thành công AI Solver 3 Tầng tinh vi từ luật Mệnh đề, DFS Backtracking Giải Cụm Không Gian cho đến Định lượng Xác suất. Đạt tỷ lệ Win rate gần tuyệt đối trên chế độ mìn ít.
+\end{itemize}
+
+\subsection{Hướng phát triển trong tương lai}
+\begin{itemize}
+    \item Nâng cấp Tầng 3 (Xác suất) lên mức độ toàn cầu ($Global\, Probabilities$): Đánh giá tương quan xác suất giữa các cụm số với nhau thay vì chỉ làm việc cục bộ. Điều này tốn kém chi phí tính toán nhưng đánh đổi được sự an toàn cao hơn.
+    \item Thiết kế lại chương trình và AI bằng đa luồng (Multi-threading) hoặc bất đồng bộ (Asyncio) để Animation chạy tác tử chạy song song mượt mà hơn.
+    \item Chuyển đổi mã nguồn từ Tkinter tĩnh sang các hệ sinh thái Game Engine như Pygame hay Godot để áp dụng Particles Systems (Ví dụ: Hiệu ứng cháy nổ khi giẫm mìn).
+\end{itemize}

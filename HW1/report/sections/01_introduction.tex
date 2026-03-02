@@ -1,5 +1,5 @@
 % !TEX root = ../main.tex
-\section{Giới thiệu}
+\section{Giới thiệu vấn đề / Introduction}
 
 \subsection{Mục tiêu \& Yêu cầu}
 Minesweeper (Dò mìn) là một trò chơi giải đố logic kinh điển. Mục tiêu của trò chơi là mở tất cả các ô trên một bảng mà không chạm vào bất kỳ quả mìn nào được giấu kín. Người chơi nhận được các gợi ý bằng số cho biết có bao nhiêu quả mìn nằm trong 8 ô xung quanh một ô.
@@ -11,10 +11,26 @@ Các mục tiêu chính của bài tập lớn này bao gồm:
     \item \textbf{Tích hợp AI Solver:} Thiết kế và cài đặt một tác tử AI có khả năng tự động giải quyết trò chơi bằng cách suy luận vị trí của mìn thông qua logic toán học, thỏa mãn ràng buộc (constraint satisfaction) và xác suất.
 \end{enumerate}
 
+\subsection{Động lực thực hiện (Motivations)}
+Minesweeper là một trò chơi giải đố kinh điển, tuy nhiên việc giải quyết nó trên các bàn cờ lớn hoặc trong các tình huống mìn được bố trí dày đặc đòi hỏi khả năng suy luận logic và tính toán xác suất cao. Việc ứng dụng các kỹ thuật Trí tuệ Nhân tạo (AI) vào việc giải Minesweeper không chỉ là một bài toán thú vị để kiểm tra khả năng của các thuật toán tìm kiếm và thỏa mãn ràng buộc, mà còn mang lại hiểu biết sâu sắc về cách mà máy tính có thể mô phỏng và vượt trội hơn tư duy suy luận logic của con người. Hơn nữa, việc tự xây dựng lại toàn bộ trò chơi từ đầu với kiến trúc chuẩn mực (MVC) tạo nền tảng vững chắc để dễ dàng tích hợp và thử nghiệm các mô hình AI khác nhau.
+
 \subsection{Luật chơi cơ bản}
 \begin{itemize}
     \item \textbf{Mở ô (Click trái):} Click chuột trái vào một ô để mở nó. Nếu đó là mìn, trò chơi kết thúc (Thua). Nếu đó là một con số, nó hiển thị tổng số mìn ở 8 ô xung quanh. Nếu ô đó trống (không có mìn xung quanh), trò chơi sẽ tự động mở rộng tất cả các ô an toàn lân cận.
     \item \textbf{Cắm cờ (Click phải):} Người chơi có thể click chuột phải để đặt cờ (Flag) lên ô mà họ nghi ngờ có mìn. Cờ giúp ngăn việc vô tình click trái vào mìn.
     \item \textbf{Mở nhanh - Chord Reveal (Double-Click):} Nếu một ô số đã mở và có đúng số lá cờ xung quanh bằng với giá trị của ô đó, double-click vào ô số sẽ tự động mở tất cả các ô chưa mở xung quanh nó.
     \item \textbf{An toàn lượt đầu (First-Click Safety):} Lượt click đầu tiên của trò chơi được đảm bảo an toàn 100\% (không bao giờ trúng mìn) và thường sẽ mở ra một vùng lớn để bắt đầu suy luận.
+\end{itemize}
+
+\subsection{Tính năng giao diện (UI Features)}
+Sản phẩm được thiết kế với giao diện trực quan, rõ ràng gồm các thành phần chính:
+\begin{itemize}
+    \item \textbf{Thanh menu (Menu Bar):} Hỗ trợ thay đổi độ khó với các mức Dễ ($9\times9$, 10 mìn), Trung bình ($16\times16$, 40 mìn), Khó ($16\times30$, 99 mìn), và Tùy chỉnh kích thước bảng tùy ý. Trợ giúp xem hướng dẫn luật chơi và thuật toán.
+    \item \textbf{Thanh trạng thái (Status Bar):} 
+    \begin{itemize}
+        \item Bộ đếm mìn (Mine Counter): Cập nhật theo thời gian thực số mìn còn lại dựa trên lượng cờ đã cắm.
+        \item Đồng hồ đếm giờ (Timer): Bắt đầu chạy kể từ lượt click đầu tiên. Tối đa 999 giây.
+        \item Nút Reset hình mặt cười (Smiley Button): Thể hiện cảm xúc (bình thường, thắng, thua, bất ngờ lúc mở nhanh), click vào để thiết lập lại trò chơi hiện tại.
+        \item Cụm nút Trí tuệ Nhân tạo: Nút \textbf{Hint} cho AI đi từng bước một và biểu diễn nước đi trực quan, và nút \textbf{Solve} để AI tự động giải toàn bộ ván đấu với Animation mượt mà.
+    \end{itemize}
 \end{itemize}

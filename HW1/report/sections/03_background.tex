@@ -1,0 +1,24 @@
+% !TEX root = ../main.tex
+\section{Cơ sở lý thuyết / Background \& Theoretical Foundations}
+
+\subsection{Mô hình MVC (Model - View - Controller)}
+Mô hình MVC là một mẫu thiết kế kiến trúc phần mềm (Software Architectural Pattern) phổ biến, giúp tách biệt ba thành phần chính của một ứng dụng đồ họa:
+\begin{itemize}
+    \item \textbf{Model:} Quản lý dữ liệu, trạng thái và các quy tắc logic cốt lõi. Trong bài toán Minesweeper, Model lưu trữ ma trận mìn, tính toán số lượng mìn xung quanh và cung cấp các hàm API nội bộ (như \texttt{reveal}, \texttt{flag}).
+    \item \textbf{View:} Quản lý việc hiển thị thông tin và tương tác với người dùng (GUI). Nó chỉ biết cách vẽ các nút bấm, biểu tượng, đồng hồ và cập nhật chúng khi nhận được mệnh lệnh.
+    \item \textbf{Controller:} Cầu nối giữa Model và View. Nó tiếp nhận các sự kiện từ chuột/bàn phím, gọi các hàm thay đổi dữ liệu của Model, sau đó ra lệnh cho View cập nhật giao diện hiển thị cho phù hợp.
+\end{itemize}
+
+\subsection{Tìm kiếm theo chiều sâu (Depth-First Search - DFS)}
+DFS là một thuật toán duyệt hoặc tìm kiếm trên cây/đồ thị. Thuật toán bắt đầu từ một nút gốc và đi dọc theo một nhánh xa nhất có thể trước khi quay lui (backtrack).
+Để thực hiện giải thuật toán \textit{Flood Fill} (giúp mở rộng nhanh các ô trống liên thông trong Minesweeper), DFS được đánh giá là cực kỳ phù hợp. Mô hình DFS sử dụng \textbf{Ngăn xếp (Stack - Cơ chế LIFO)} trong quá trình thực thi:
+\[ LIFO: \text{Last In, First Out (Vào sau, Ra trước)} \]
+
+\subsection{Suy luận Mệnh đề (Propositional Logic) \& Ràng buộc (Constraints)}
+Trong trò chơi Minesweeper, mỗi ô đã mở (chứa một con số $V$) sẽ thiết lập một ràng buộc tuyến tính chặt chẽ đối với các ô chưa mở xung quanh nó. Gọi $x_i \in \{0, 1\}$ là biến đại diện cho sự hiện diện của mìn tại ô vuông thứ $i$ ($0$ là an toàn, $1$ là mìn), ta luôn có phương trình cục bộ:
+\[ \sum_{i \in \text{Neighbors}} x_i = V \]
+Dựa vào số lượng cờ đã cắm $F$ ($x_j = 1$ với $j \in \text{Flagged}$) và số lượng ô kín $H$, ta có thể đơn giản hóa quy tắc giải thuật thành hai định lý mệnh đề chặt chẽ phục vụ cho Tầng Logic 1 như sau:
+\begin{itemize}
+    \item Mệnh đề \textit{All Safe}: $\text{If } V - F = 0 \implies \forall h \in H, x_h = 0$
+    \item Mệnh đề \textit{All Mines}: $\text{If } V - F = |H| \implies \forall h \in H, x_h = 1$
+\end{itemize}
