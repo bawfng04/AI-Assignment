@@ -1,0 +1,23 @@
+% !TEX root = ../main.tex
+\section{Kiến trúc \& Thiết kế}
+
+Trò chơi được xây dựng dựa trên mô hình \textbf{Model-View-Controller (MVC)} nhằm phân tách rạch ròi giữa logic xử lý bên trong, giao diện người dùng và bộ xử lý tương tác. Việc phân tách này giúp mã nguồn dễ bảo trì và mở rộng sau này.
+
+\subsection{Các thành phần MVC}
+
+\begin{itemize}
+    \item \textbf{Model (\texttt{MinesweeperModel}):}
+    Đại diện cho trạng thái bên trong của bàn cờ. Thành phần này lưu trữ vị trí của các quả mìn, số lượng mìn xung quanh mỗi ô, và trạng thái tương tác của người chơi (chưa mở, đã mở, đã cắm cờ). Nó cũng chịu trách nhiệm thực thi các quy tắc cốt lõi (đếm số mìn lân cận và kiểm tra điều kiện thắng/thua).
+    
+    \item \textbf{View (\texttt{MinesweeperView}):}
+    Quản lý Giao diện Người dùng (GUI) được cài đặt chủ yếu thông qua thư viện \texttt{Tkinter}. Thành phần này vẽ lưới các nút bấm tương tác, thanh trạng thái (chứa bộ đếm mìn, nút khởi động lại hình mặt cười, và đồng hồ đếm giờ), cùng các hộp thoại. View hoàn toàn không biết gì về logic bên trong của trò chơi.
+    
+    \item \textbf{Controller (\texttt{MinesweeperController}):}
+    Đóng vai trò trung gian. Nó lắng nghe các sự kiện chuột (click trái, click phải, double-click) từ View, yêu cầu Model cập nhật trạng thái dựa trên các tương tác đó, và sau đó điều khiển View vẽ lại để phản ánh trạng thái mới (ví dụ: hiển thị một con số hoặc một lá cờ).
+\end{itemize}
+
+\subsection{Chiến lược "An toàn lượt đầu" (First-Click Safety)}
+
+Để tránh trải nghiệm khó chịu khi người chơi click ngay vào quả mìn ở lượt đầu tiên, hệ thống áp dụng chiến lược sinh mìn độ trễ.
+Khi khởi tạo trò chơi mới, bàn cờ hoàn toàn trống. Đồng hồ chưa chạy và chưa có quả mìn nào được đặt.
+Khi người chơi thực hiện click chuột trái đầu tiên tại tọa độ $(r, c)$, Model ghi nhận đây là nước đi khởi đầu. Một vùng cực an toàn kích thước $3 \times 3$ được thiết lập xung quanh $(r, c)$. Sau đó, các quả mìn mới được rải ngẫu nhiên \textit{chỉ ở các ô nằm ngoài} vùng an toàn này. Điều này đảm bảo lượt click đầu tiên luôn an toàn tuyệt đối và thường mở ra một khu vực lớn để bắt đầu suy luận.

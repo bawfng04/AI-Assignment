@@ -1,0 +1,77 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}    % Use utf8 input encoding
+\usepackage[T5]{fontenc}       % Output font encoding for Vietnamese
+\usepackage[vietnamese]{babel} % Vietnamese language support
+\usepackage{mathptmx}          % Times Roman font
+\usepackage[top=2cm,bottom=2cm,left=3cm,right=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{caption}
+
+% --- Document Formatting ---
+\linespread{1.3} % 1.5 line spacing equivalent
+
+% Define colors for code listings
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+
+% Optional: Change section heading styles
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\begin{document}
+
+% --- Cover Page ---
+\input{sections/00_cover}
+
+% --- Table of Contents ---
+\newpage
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+% --- Main Content ---
+\pagenumbering{arabic}
+
+\input{sections/01_introduction}
+\input{sections/02_architecture_design}
+\input{sections/03_algorithms}
+\input{sections/04_contributions}
+
+\end{document}

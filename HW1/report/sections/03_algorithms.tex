@@ -1,0 +1,51 @@
+% !TEX root = ../main.tex
+\section{Thuật toán áp dụng}
+
+\subsection{Thuật toán Depth-First Search (DFS) cho cơ chế Flood Fill}
+
+Khi người chơi click vào một ô trống (ô có số 0, tức không có mìn lân cận), trò chơi sẽ tự động mở tất cả các ô trống liền kề và dừng lại tại các ô có chứa số (nằm cạnh mìn). Quá trình này yêu cầu việc duyệt một lưới 2D, có thể được mô hình hóa toán học như một đồ thị vô hướng.
+
+Để thực hiện điều này, chúng tôi áp dụng thuật toán \textbf{Tìm kiếm theo chiều sâu không đệ quy (Iterative Depth-First Search - DFS)} kết hợp với một cấu trúc dữ liệu Ngăn xếp (Stack - LIFO).
+
+\subsubsection{Tại sao dùng Không đệ quy (Iterative) thay vì Đệ quy (Recursive)?}
+Ngôn ngữ Python ép buộc một giới hạn đệ quy khá khắt khe để tránh lỗi tràn bộ nhớ (mặc định khoảng 1000 khung lệnh). Trên các bảng có kích thước lớn, ví dụ như tùy chỉnh $30\times30$ (900 ô), một hàm DFS đệ quy sâu có thể làm ứng dụng bị đứng (\texttt{RecursionError}). Việc sử dụng cấu trúc Mảng (Array) như một Stack tự quản lý sẽ né tránh hoàn toàn vấn đề này vì nó bị giới hạn chỉ bởi RAM máy tính.
+
+\subsubsection{Các bước của thuật toán DFS}
+\begin{enumerate}
+    \item Khi có sự kiện click trái mở một ô trống $(r, c)$.
+    \item DFS khởi chạy bằng cách đẩy $(r, c)$ vào \texttt{stack}, đồng thời khởi tạo một danh sách \texttt{visited} (các ô đã duyệt qua) và danh sách \texttt{revealed\_cells} chứa kết quả.
+    \item Vòng lặp thuật toán tiếp tục chạy chừng nào \texttt{stack} chưa rỗng:
+    \begin{enumerate}
+        \item Lấy phần tử $(r, c)$ ở đỉnh stack ra để xét.
+        \item Nếu $(r, c)$ đã có trong \texttt{visited}, bỏ qua nó. Nếu chưa, thêm $(r, c)$ vào tập \texttt{visited}.
+        \item Nếu trạng thái của ô không phải là "chưa mở" (\texttt{hidden}), bỏ qua.
+        \item Đổi trạng thái ô thành "đã mở" (\texttt{revealed}) và lưu lại dữ liệu ô đó.
+        \item Nếu giá trị trị thực sự của ô là $0$ (trống), tiến hành xét 8 ô hàng xóm lân cận. Nếu ô hàng xóm nằm trong bảng, chưa bị duyệt qua, và không phải là mìn, đẩy tọa độ của nó vào \texttt{stack}.
+    \end{enumerate}
+    \item Kết thúc và trả về toàn bộ danh sách \texttt{revealed\_cells} để View cập nhật giao diện tổng cộng 1 lần.
+\end{enumerate}
+
+\subsection{Cài đặt AI Solver}
+
+Để nâng cao chất lượng bài làm và đáp ứng yêu cầu bộ môn một cách sáng tạo, một hệ thống Trí tuệ Nhân tạo (\texttt{MinesweeperAI}) đã được tích hợp. Thay vì dùng một bot dò đoán ngẫu nhiên thông thường, AI này giải bảng bằng một \textbf{Hệ thống suy luận 3 tầng}.
+
+\subsubsection{Tầng 1: Propositional Logic (Suy luận theo Mệnh đề)}
+Bot liên tục lập bản đồ các ràng buộc, áp dụng hai quy luật tuyệt đối chính xác cho bất kỳ ô số $V$ nào đã mở, có $F$ lá cờ bao quanh và giáp với $H$ ô chưa mở:
+
+\begin{itemize}
+    \item \textbf{Quy tắc 1 (Tất cả an toàn - All Safe):} Nếu $V = F$, nghĩa là đã tìm đủ mìn, suy ra $H$ ô chưa ráp còn lại xung quanh phải tuyệt đối an toàn. Do đó, \textbf{mở} (reveal) chúng.
+    \item \textbf{Quy tắc 2 (Tất cả là mìn - All Mines):} Nếu $(V - F) = H$, nghĩa là số mìn còn thiếu vừa đúng bằng số ô chưa ráp, thì tất cả ô trống đó đều là mìn. Do đó, \textbf{cắm cờ} (flag) chúng.
+\end{itemize}
+
+\subsubsection{Tầng 2: DFS Backtracking (Thỏa mãn ràng buộc)}
+Khi bộ quy tắc cơ bản ở Tầng 1 gặp ngõ cụt, AI chuyển sang chế độ ràng buộc (Constraint Programming).
+
+Mỗi ô số đã mở tạo ra một phương trình ràng buộc lên các ô trống giáp nó. AI gom nhóm các "ô biên" này thành các cụm (cluster) độc lập bằng cấu trúc dữ liệu tập hợp rời rạc \textbf{Union-Find} (Disjoint Set). Với mỗi nhóm có kích thước nhỏ ($\leq 15$), nó khởi chạy DFS Backtracking:
+\begin{itemize}
+    \item Cây tìm kiếm lần lượt ép giá trị \texttt{Đúng} (Mìn) hoặc \texttt{Sai} (An toàn) cho mỗi ô.
+    \item Sau mỗi lượt gán, nó sẽ kiểm tra tính hợp lệ (VD: Không thể gán 2 quả mìn cạnh một ô số `1`). Nếu vi phạm, nó sẽ loại bỏ (prune) nhanh nhánh đó.
+    \item Nếu một ô cụ thể mang giá trị \texttt{Đúng} trong $100\%$ các trường hợp hợp lệ, nó chắc chắn là mìn. Ngược lại, nếu chỉ chiếm $0\%$, nó hoàn toàn an toàn.
+\end{itemize}
+
+\subsubsection{Tầng 3: Educated Guess (Dự đoán theo Xác suất)}
+Trong những màn chơi mà Minesweeper yêu cầu bắt buộc phải đoán (ví dụ các trường hợp 50/50), AI tính toán tỷ lệ xuất hiện mìn theo xác suất trên từng ô chưa mở một cách cục bộ dựa trên số lượng ràng buộc giao nhau. Sau đó sẽ đưa ra quyết định đánh đổi rủi ro chạm mìn thấp nhất.

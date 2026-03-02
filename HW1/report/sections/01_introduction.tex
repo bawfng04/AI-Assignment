@@ -1,0 +1,20 @@
+% !TEX root = ../main.tex
+\section{Giới thiệu}
+
+\subsection{Mục tiêu \& Yêu cầu}
+Minesweeper (Dò mìn) là một trò chơi giải đố logic kinh điển. Mục tiêu của trò chơi là mở tất cả các ô trên một bảng mà không chạm vào bất kỳ quả mìn nào được giấu kín. Người chơi nhận được các gợi ý bằng số cho biết có bao nhiêu quả mìn nằm trong 8 ô xung quanh một ô.
+
+Các mục tiêu chính của bài tập lớn này bao gồm:
+\begin{enumerate}
+    \item \textbf{Cài đặt trò chơi:} Phát triển một trò chơi Minesweeper hoàn chỉnh bằng Python và thư viện giao diện đồ họa (GUI) Tkinter, không sử dụng các thư viện game có sẵn như Pygame.
+    \item \textbf{Sử dụng thuật toán duyệt đồ thị:} Áp dụng thuật toán Tìm kiếm theo chiều sâu (Depth-First Search - DFS) để mở rộng nhanh chóng khu vực các ô trống an toàn khi người chơi click vào một ô không có mìn xung quanh (cơ chế Flood Fill).
+    \item \textbf{Tích hợp AI Solver:} Thiết kế và cài đặt một tác tử AI có khả năng tự động giải quyết trò chơi bằng cách suy luận vị trí của mìn thông qua logic toán học, thỏa mãn ràng buộc (constraint satisfaction) và xác suất.
+\end{enumerate}
+
+\subsection{Luật chơi cơ bản}
+\begin{itemize}
+    \item \textbf{Mở ô (Click trái):} Click chuột trái vào một ô để mở nó. Nếu đó là mìn, trò chơi kết thúc (Thua). Nếu đó là một con số, nó hiển thị tổng số mìn ở 8 ô xung quanh. Nếu ô đó trống (không có mìn xung quanh), trò chơi sẽ tự động mở rộng tất cả các ô an toàn lân cận.
+    \item \textbf{Cắm cờ (Click phải):} Người chơi có thể click chuột phải để đặt cờ (Flag) lên ô mà họ nghi ngờ có mìn. Cờ giúp ngăn việc vô tình click trái vào mìn.
+    \item \textbf{Mở nhanh - Chord Reveal (Double-Click):} Nếu một ô số đã mở và có đúng số lá cờ xung quanh bằng với giá trị của ô đó, double-click vào ô số sẽ tự động mở tất cả các ô chưa mở xung quanh nó.
+    \item \textbf{An toàn lượt đầu (First-Click Safety):} Lượt click đầu tiên của trò chơi được đảm bảo an toàn 100\% (không bao giờ trúng mìn) và thường sẽ mở ra một vùng lớn để bắt đầu suy luận.
+\end{itemize}
