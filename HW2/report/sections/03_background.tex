@@ -1,0 +1,101 @@
+% !TEX root = ../main.tex
+\section{Cơ sở lý thuyết / Background \& Theoretical Foundations}
+
+\subsection{Lý thuyết Trò chơi \& Minimax}
+Teoria trò chơi (Game Theory) nghiên cứu các tình huống quyết định giữa các cá nhân có lợi ích xung đột. Trong bối cảnh của cờ vua (một trò chơi Zero-Sum hai người), minimax là một thuật toán quyết định tối ưu:
+
+\textbf{Nguyên tắc Minimax:} Ở mỗi nút trong cây trò chơi, người chơi tối đa hóa lợi ích của họ, khi đó đối thủ (coi như người chơi tối thiểu) cố gắng tối thiểu lợi ích của người chơi đầu tiên. Giá trị của một nút được tính theo công thức đệ quy:
+
+\begin{equation*}
+V(s) = \begin{cases}
+\max_{a \in A(s)} V(s') & \text{if } s \text{ is a maximizing node} \\
+\min_{a \in A(s)} V(s') & \text{if } s \text{ is a minimizing node} \\
+\text{eval}(s) & \text{if } s \text{ is a terminal node}
+\end{cases}
+\end{equation*}
+
+nơi $s'$ là trạng thái kế tiếp sau nước đi $a$, và $\text{eval}(s)$ là hàm đánh giá tư thế.
+
+\subsection{Alpha-Beta Pruning}
+Alpha-Beta Pruning là một tối ưu hóa của Minimax cho phép cắt tỉa (prune) các nhánh mà không cần khám phá, mà vẫn đảm bảo kết quả tối ưu giống hệt.
+
+\textbf{Các tham số Alpha \& Beta:}
+\begin{itemize}
+    \item \textbf{Alpha ($\alpha$):} Giá trị tối thiểu mà người chơi tối đa hóa được đảm bảo. Ban đầu $\alpha = -\infty$.
+    \item \textbf{Beta ($\beta$):} Giá trị tối đa mà người chơi tối thiểu hóa sẽ cho phép. Ban đầu $\beta = +\infty$.
+\end{itemize}
+
+\textbf{Điều kiện cắt tỉa:}
+Khi $\alpha \geq \beta$, ta có thể cắt tỉa (không khám phá thêm nhánh). Điều này xảy ra khi người chơi tối đa hóa đã tìm thấy nước đi với giá trị $\geq \beta$ (tức là đối thủ có cách tốt hơn để tránh nút này).
+
+\textbf{Hiệu quả:} Trong trường hợp tốt nhất (move ordering hoàn hảo), Alpha-Beta cắt tỉa $O(b^{d/2})$ nút thay vì $O(b^d)$ nút của Minimax thuần túy.
+
+\subsection{Các Tối ưu hóa Alpha-Beta}
+
+\subsubsection{Move Ordering}
+Hiệu quả của Alpha-Beta phụ thuộc rất lớn vào thứ tự khám phá nước đi. Nước đi tốt nên được khám phá trước:
+\begin{itemize}
+    \item \textbf{Killer Heuristic:} Theo dõi các nước đi cắt tỉa ở vị trí anh em (sibling positions).
+    \item \textbf{History Heuristic:} Theo dõi tần suất nước đi gây cắt tỉa.
+    \item \textbf{Captures \& Checks:} Ưu tiên nước bắt quân và check vì chúng thường mạnh.
+\end{itemize}
+
+\subsubsection{Transposition Table (TT)}
+Cờ vua có thể đạt cùng một tư thế qua các chuỗi nước đi khác nhau (transpositions). Transposition Table lưu cache giá trị của các tư thế đã tính toán:
+\begin{itemize}
+    \item Sử dụng Zobrist Hashing để lưu trữ hiệu quả.
+    \item Tiết kiệm thời gian tính toán khi gặp lại tư thế.
+    \item Giảm số nút khám phá một cách đáng kể.
+\end{itemize}
+
+\subsubsection{Quiescence Search}
+Quiescence Search mở rộng tìm kiếm từ các nút lá nếu tư thế chưa yên tĩnh (peaceful). Điều này tránh việc dừng ở các vị trí tượng trưng:
+\begin{equation*}
+\text{Quiescent}(s) = \begin{cases}
+\text{eval}(s) & \text{if no forcing moves available} \\
+\max(\text{evaluate}, \text{search capturing moves}) & \text{otherwise}
+\end{cases}
+\end{equation*}
+
+\subsection{Monte Carlo Tree Search (MCTS)}
+MCTS là một thuật toán tìm kiếm không yêu cầu hàm đánh giá heuristic. Nó dựa vào Monte Carlo simulations để ước tính giá trị của các trạng thái.
+
+\textbf{Bốn giai đoạn của MCTS:}
+\begin{enumerate}
+    \item \textbf{Selection:} Bắt đầu từ nút gốc, sử dụng UCB1 để chọn con của mỗi nút cho đến khi đạt một nút không hoàn thành phát triển (haven't been fully explored).
+    \item \textbf{Expansion:} Thêm các nút con mới để nút hiện tại (hoặc chọn một nút con nếu tất cả đã được khám phá).
+    \item \textbf{Simulation (Rollout):} Từ nút mới, chạy một trò chơi ngẫu nhiên đến khi kết thúc, với một rollout policy để ưu tiên các nước đi hứa hẹn.
+    \item \textbf{Backpropagation:} Cập nhật thống kê (win count, visit count) của tất cả các nút từ nút đã mở rộng trở lại nút gốc.
+\end{enumerate}
+
+\textbf{UCB1 (Upper Confidence Bound):}
+$$\text{UCB1}(v) = \frac{w_v}{n_v} + C \sqrt{\frac{\ln N}{n_v}}$$
+nơi:
+\begin{itemize}
+    \item $w_v$ = tổng số thắng từ nút $v$
+    \item $n_v$ = số lần nút $v$ được thăm
+    \item $N$ = số lần nút cha được thăm
+    \item $C = \sqrt{2}$ = hằng số cân bằng giữa khai thác (exploitation) và khám phá (exploration)
+\end{itemize}
+
+\subsubsection{Rollout Policy}
+Rollout policy xác định cách chơi từ một nút mới. Một rollout policy thông minh ưu tiên:
+\begin{itemize}
+    \item \textbf{Captures:} Bắt quân của đối thủ.
+    \item \textbf{Checks:} Chiếu tướng đối thủ.
+    \item \textbf{Random:} Nước đi ngẫu nhiên hợp lệ.
+\end{itemize}
+
+\subsection{Hàm Đánh Giá (Evaluation Function)}
+Evaluation function ước tính lợi thế của một tư thế (từ 0 = hoà, $\pm \infty$ = chiếu tướng).
+
+\textbf{Thành phần chính:}
+\begin{itemize}
+    \item \textbf{Piece Values:} Pawn=1, Knight=3, Bishop=3, Rook=5, Queen=9, King=$\infty$
+    \item \textbf{Piece-Square Tables:} Điều chỉnh giá trị dựa trên vị trí (ví dụ, Mã ở trung tâm giá 3.5).
+    \item \textbf{Mobility:} Số nước đi hợp lệ có sẵn.
+\end{itemize}
+
+\textbf{Công thức cơ bản:}
+$$\text{eval}(s) = \sum_{\text{white pieces}} \text{value}(p) - \sum_{\text{black pieces}} \text{value}(p) + \text{positional bonuses}$$
+

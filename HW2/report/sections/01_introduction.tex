@@ -1,0 +1,43 @@
+% !TEX root = ../main.tex
+\section{Giới thiệu vấn đề / Introduction}
+
+\subsection{Mục tiêu \& Yêu cầu}
+Cờ vua (Chess) là một trong những trò chơi có chiều sâu chiến lược cao nhất được con người tạo ra. Xây dựng một hệ thống AI chơi cờ vua hiệu quả là một bài toán cổ điển trong lĩnh vực Trí tuệ Nhân tạo và Lý thuyết Trò chơi.
+
+Các mục tiêu chính của bài tập lớn này bao gồm:
+\begin{enumerate}
+    \item \textbf{Xây dựng môi trường chơi cờ vua:} Phát triển một nền tảng cờ vua hoàn chỉnh có khả năng quản lý trạng thái bàn cờ, sinh ra các nước đi hợp lệ, và theo dõi lịch sử trận đấu.
+    \item \textbf{Cài đặt Agent 1 (Alpha-Beta):} Triển khai thuật toán Alpha-Beta Pruning với các tối ưu hóa tiên tiến bao gồm move ordering, transposition table, và quiescence search. (4 điểm)
+    \item \textbf{Cài đặt Agent 2 (MCTS):} Triển khai thuật toán Monte Carlo Tree Search hoàn toàn bao gồm 4 giai đoạn: Selection (UCB1), Expansion, Simulation, và Backpropagation. (4 điểm)
+    \item \textbf{So sánh hiệu suất:} Tổ chức các trận đấu giữa hai agent, thu thập dữ liệu hiệu suất, và trực quan hóa kết quả. (1 điểm)
+    \item \textbf{Giao diện người dùng:} Phát triển GUI tương tác cho phép người dùng chơi cờ vua với AI, xem lịch sử nước đi, và theo dõi trạng thái bàn cờ.
+\end{enumerate}
+
+\subsection{Động lực thực hiện (Motivations)}
+Chơi cờ vua được coi là một phép thử Turing cổ điển cho AI vì nó đòi hỏi:
+\begin{itemize}
+    \item \textbf{Tìm kiếm chiến lược:} Khoa học tìm kiếm hiệu quả trong không gian trò chơi khổng lồ ($\sim 10^{120}$ trạng thái có thể).
+    \item \textbf{Đánh giá vị trí:} Xây dựng hàm heuristic mạnh mẽ để đánh giá tính ưu thế mà không cần khám phá toàn bộ cây trò chơi.
+    \item \textbf{Suy luận tìm kiếm:} Làm chủ các khái niệm như quiescence (tìm kiếm chiều sâu hơn ở những vị trí bất ổn định) và alpha-beta cutoff (cắt tỉa nhánh không cần thiết).
+\end{itemize}
+
+Một mục tiêu quan trọng khác là so sánh hai lớp thuật toán: Alpha-Beta (deterministic, depth-limited search) vs MCTS (stochastic, iterative deepening). Hai phương pháp này đại diện cho hai hướng tiếp cận khác nhau trong AI chơi game hiện đại.
+
+\subsection{Phạm vi của dự án}
+\begin{itemize}
+    \item \textbf{Quy tắc cờ vua:} Hỗ trợ đầy đủ các quy tắc chơi cờ vua tiêu chuẩn bao gồm castling, en passant, pawn promotion.
+    \item \textbf{Độ sâu tìm kiếm:} Alpha-Beta mặc định sâu 4 ply với quiescence search 3 ply. MCTS mặc định 1500 lần lặp.
+    \item \textbf{Thời gian nước đi:} Mỗi agent có giới hạn thời gian năng lực để đưa ra nước đi (tùy chỉnh được).
+    \item \textbf{So sánh:} Chạy các loạt trận đấu (5-20 games) với ghi lại chi tiết từng nước đi, kết quả, và thời gian.
+\end{itemize}
+
+\subsection{Cấu trúc bài báo}
+\begin{itemize}
+    \item \textbf{Phần 2 (Related Work):} Tổng quan các công trình trước đó về Computer Chess và AI Game Playing.
+    \item \textbf{Phần 3 (Background):} Giả thuyết cơ bản về Alpha-Beta, MCTS, và hàm đánh giá.
+    \item \textbf{Phần 4 (Methodologies):} Thiết kế kiến trúc hệ thống, chi tiết cài đặt từng thành phần.
+    \item \textbf{Phần 5 (Results):} Kết quả thực nghiệm, phân tích hiệu suất, trực quan hóa dữ liệu.
+    \item \textbf{Phần 6 (Limitations):} Những hạn chế và không gian cải tiến tương lai.
+    \item \textbf{Phần 7 (Conclusion):} Tóm tắt đóng góp chính và kết luận.
+\end{itemize}
+

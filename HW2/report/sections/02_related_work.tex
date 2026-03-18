@@ -1,0 +1,51 @@
+% !TEX root = ../main.tex
+\section{Công trình liên quan / Related Work}
+
+\subsection{Lịch sử Computer Chess}
+Lịch sử của Computer Chess (Cờ vua máy tính) gắn liền với lịch sử của Trí tuệ Nhân tạo. Năm 1966, David Levy, một Grandmaster cờ vua, đặt cược rằng không có máy tính nào có thể đánh bại anh ta trong 10 năm tới. Tuy nhiên, sự phát triển của các máy chơi cờ vua tự động đã vượt quá dự kiến bao giờ hết.
+
+\textbf{Các cột mốc quan trọng:}
+\begin{itemize}
+    \item \textbf{1974 - Kaissa:} Chương trình máy tính đầu tiên thắng trong một giải đấu cờ vua chính thức (ACM Computer Chess Championship).
+    \item \textbf{1980 - Belle:} Máy tính chuyên dụng với kiến trúc VLSI, có khả năng tính 10 triệu tư thế mỗi giây.
+    \item \textbf{1997 - Deep Blue vs Garry Kasparov:} IBM's Deep Blue thắng Grandmaster Garry Kasparov với tỉ số 3.5-2.5. Deep Blue có thể đánh giá 200 triệu tư thế mỗi giây.
+    \item \textbf{2007 - Rybka:} Trở thành một trong những engine mạnh nhất với deep search trees và đánh giá vị trí tối ưu.
+    \item \textbf{2020+ - Stockfish, Leela Chess Zero:} Thời đại của engine kết hợp tree search với neural networks.
+\end{itemize}
+
+\subsection{Minimax \& Alpha-Beta Pruning}
+Minimax là nền tảng cơ bản của hầu hết các thuật toán chơi game hai người. Claude Shannon đã giới thiệu khái niệm này vào những năm 1950. Thuật toán xây dựng cây trò chơi, giả sử cả hai bên đều chơi tối ưu.
+
+\textbf{Alpha-Beta Pruning:} Donald Knuth và Ronald Moore phát triển kỹ thuật Alpha-Beta Pruning để cắt tỉa các nhánh không cần thiết. Thuật toán giảm độ phức tạp từ $O(b^d)$ xuống $O(b^{d/2})$ trong trường hợp tốt nhất (với $b$ là hệ số nhánh và $d$ là độ sâu).
+
+\textbf{Các tối ưu hóa Alpha-Beta:}
+\begin{itemize}
+    \item \textbf{Move Ordering:} Khám phá các nước đi tốt trước để tìm cơ hội cắt tỉa sớm.
+    \item \textbf{Transposition Table:} Lưu cache kết quả của các tư thế được tìm kiếm trước.
+    \item \textbf{Quiescence Search:} Mở rộng tìm kiếm nếu tư thế chưa yên tĩnh (có capture hay check).
+    \item \textbf{History Heuristic:} Ưu tiên nước đi dựa trên thống kê hiệu quả.
+\end{itemize}
+
+\subsection{Monte Carlo Tree Search (MCTS)}
+Monte Carlo Tree Search được giới thiệu bởi Rémi Coulom vào năm 2006 và trở nên nổi tiếng lớn qua AlphaGo của DeepMind. So với Alpha-Beta:
+\begin{itemize}
+    \item MCTS không cần hàm đánh giá heuristic tĩnh.
+    \item Sử dụng Monte Carlo simulations để ước tính giá trị một tư thế.
+    \item Tập trung tìm kiếm vào nhánh hứa hẹn thông qua UCB.
+\end{itemize}
+
+\textbf{Công thức UCB1:}
+$$\text{UCB}(v) = \frac{Q(v)}{N(v)} + C\sqrt{\frac{\ln(N(\text{parent}))}{N(v)}}$$
+nơi $Q(v)$ là tổng phần thưởng, $N(v)$ là số lần thăm, $C = \sqrt{2}$ là chi số cân bằng.
+
+\subsection{Hàm Đánh Giá}
+Các hàm đánh giá truyền thống bao gồm:
+\begin{itemize}
+    \item \textbf{Material Count:} Giá trị các quân.
+    \item \textbf{Piece-Square Tables:} Điểm dựa trên vị trí của quân.
+    \item \textbf{Positional Factors:} Control trung tâm, an toàn vua, cấu trúc tốt.
+    \item \textbf{Piece Mobility:} Số nước đi khả dụng.
+\end{itemize}
+
+\subsection{Kết luận}
+Bài tập lớp này so sánh hai phương pháp cơ bản (Alpha-Beta và MCTS) trên cùng một hệ thống, cho phép so sánh rõ ràng hiệu suất tương đối của chúng.

@@ -1,0 +1,128 @@
+% !TEX root = ../main.tex
+\section{Phương án đề xuất / Methodologies}
+
+\subsection{Tổng quan kiến trúc hệ thống (System Architecture Overview)}
+Hệ thống Chess AI được thiết kế theo mô hình modular, cho phép dễ dàng tích hợp các agent mới và so sánh hiệu suất. Kiến trúc chính bao gồm:
+
+\begin{itemize}
+    \item \textbf{ChessEnvironment:} Wrapper xung quanh thư viện \texttt{python-chess}, quản lý trạng thái bàn cờ, sinh nước đi hợp lệ, theo dõi lịch sử.
+    \item \textbf{AlphaBetaAgent:} Agent sử dụng Alpha-Beta Pruning với các tối ưu hóa.
+    \item \textbf{MCTSAgent:} Agent sử dụng Monte Carlo Tree Search.
+    \item \textbf{ComparisonRunner:} Chạy các trận đấu giữa agents, ghi lại dữ liệu hiệu suất.
+    \item \textbf{GUI (Tkinter):} Cho phép người dùng chơi cờ với AI và xem lịch sử nước đi.
+    \item \textbf{Visualization:} Tạo biểu đồ so sánh hiệu suất agent.
+\end{itemize}
+
+\subsection{Chi tiết cài đặt Agent Alpha-Beta}
+
+\subsubsection{Negamax}
+Thay vì triển khai riêng biệt minimax với max và min, chúng tôi sử dụng \textbf{Negamax}, một biến thể đơn giản hóa:
+\begin{equation*}
+\text{negamax}(d, \alpha, \beta) = \begin{cases}
+\text{eval}(s) & \text{if } d = 0 \text{ or game over} \\
+\max_{move} -\text{negamax}(d-1, -\beta, -\alpha) & \text{otherwise}
+\end{cases}
+\end{equation*}
+
+Công thức này tránh cần quản lý max/min nodes riêng biệt.
+
+\subsubsection{Move Ordering}
+Hiệu quả Alpha-Beta phụ thuộc vào thứ tự nước đi khám phá. Chúng tôi áp dụng:
+\begin{enumerate}
+    \item \textbf{Principal Variation (PV):} Nước đi tốt nhất từ transposition table.
+    \item \textbf{Captures:} Bắt quân (có thể là tốt).
+    \item \textbf{Checks:} Chiếu tướng (tạo áp lực).
+    \item \textbf{History Heuristic:} Nước đi đã gây cắt tỉa ở vị trí khác.
+    \item \textbf{Quiet Moves:} Nước đi yên tĩnh khác.
+\end{enumerate}
+
+\subsubsection{Transposition Table}
+Lưu cache $(position \to score, depth, flag)$ sử dụng Zobrist Hashing. Khi gặp lại vị trí, kiểm tra xem được lưu với độ sâu đủ không:
+- \textbf{Exact score:} Nếu độ sâu $\geq$ yêu cầu, trả về score.
+- \textbf{Lower bound:} Cập nhật alpha nếu cần thiết.
+- \textbf{Upper bound:} Cập nhật beta nếu cần thiết.
+
+\subsubsection{Quiescence Search}
+Từ nút lá (depth = 0), mở rộng tìm kiếm các nước bắt quân, check, và pawn promotion tiếp tục cho đến tĩnh lặng:
+\begin{equation*}
+\text{qsearch}(d, \alpha, \beta) = \begin{cases}
+\text{eval}(s) & \text{if } d = 0 \text{ or no forcing moves} \\
+\max_{forcing} -\text{qsearch}(d-1, -\beta, -\alpha) & \text{otherwise}
+\end{cases}
+\end{equation*}
+
+Mặc định độ sâu quiescence là 3 ply.
+
+\subsection{Chi tiết cài đặt Agent MCTS}
+
+\subsubsection{Cấu trúc Node}
+Mỗi node trong cây MCTS lưu trữ:
+\begin{itemize}
+    \item \textbf{state:} Trạng thái bàn cờ hiện tại.
+    \item \textbf{parent:} Node cha.
+    \item \textbf{children:} Từ điển \{move $\to$ child node\}.
+    \item \textbf{visit\_count:} Số lần node được thăm ($N$).
+    \item \textbf{value:} Tổng giá trị từ simulations ($W$).
+    \item \textbf{is\_expanded:} Đã sinh ra hết con chưa.
+\end{itemize}
+
+\subsubsection{Bốn giai đoạn}
+
+\textbf{1. Selection:} Bắt đầu từ gốc, sử dụng UCB1 để chọn con cho đến khi tìm node chưa được mở rộng hoàn toàn:
+$$\text{best\_child} = \arg\max_c \text{UCB1}(c)$$
+
+\textbf{2. Expansion:} Thêm một (hoặc tất cả) con mới của node hiện tại vào cây.
+
+\textbf{3. Simulation (Rollout):} Từ node mới, chạy trận random play theo rollout policy đến kết thúc:
+\begin{itemize}
+    \item Ưu tiên captures (10 điểm).
+    \item Ưu tiên checks (2 điểm).
+    \item Nước random khác (1 điểm).
+    \item Chọn nước có xác suất tỷ lệ với điểm.
+\end{itemize}
+
+\textbf{4. Backpropagation:} Từ node mới trở lại gốc, cập nhật $visit\_count$ (tăng 1) và $value$ (cộng kết quả cuối -1, 0, +1):
+$$W_{\text{parent}} \mathrel{+}= \text{result}, \quad N_{\text{parent}} \mathrel{+}= 1$$
+
+\subsubsection{Tính toán UCB1 và Best Move}
+Sau khi hoàn thành lần lặp (ví dụ 1500 iterations), chọn nước đi của node con với số lần thăm cao nhất:
+$$\text{best\_move} = \arg\max_c N(c)$$
+
+Hằng số exploration $C = \sqrt{2}$ cân bằng khai thác và khám phá.
+
+\subsection{Hàm Đánh Giá (Evaluation Function)}
+Evaluation function được sử dụng bởi Alpha-Beta và khi cần đánh giá nhanh vị trí. Bao gồm:
+
+\textbf{Material Count:}
+\[E_{\text{material}} = \sum (\text{piece\_value} \times \text{count})\]
+Giá trị: Pawn=1, Knight=3, Bishop=3, Rook=5, Queen=9.
+
+\textbf{Piece-Square Tables:} Bảng điểm từ 0 (xấu) đến 100 (tốt) cho mỗi ô, mỗi loại quân.
+
+\textbf{Mobility Bonus:} $+0.1 \times$ số nước đi hợp lệ.
+
+\textbf{Final Score:}
+\[\text{score} = E_{\text{material}} + E_{\text{positional}} + E_{\text{mobility}}\]
+
+\subsection{So sánh Agents (Comparison Methodology)}
+Chạy các trận đấu cấu hình:
+\begin{itemize}
+    \item \textbf{White vs Black:} Hoán đổi màu để kiểm tra bias.
+    \item \textbf{Multiple games:} Thường 10 trận để có dữ liệu thống kê.
+    \item \textbf{Config varied:} Depth/iterations khác nhau để so sánh tradeoff giữa chất lượng quyết định và tốc độ.
+\end{itemize}
+
+Ghi lại:
+\begin{itemize}
+    \item Kết quả mỗi trận (thắng/thua/hoà).
+    \item Chiêu cuối cùng.
+    \item Thời gian tính toán.
+\end{itemize}
+
+Tính toán thống kê:
+\begin{itemize}
+    \item Win rate (\%).
+    \item Game length trung bình.
+    \item Thời gian move trung bình.
+\end{itemize}
+

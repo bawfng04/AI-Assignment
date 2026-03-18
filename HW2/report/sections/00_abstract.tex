@@ -1,0 +1,8 @@
+% !TEX root = ../main.tex
+\begin{abstract}
+Báo cáo này trình bày quá trình thiết kế và phát triển hệ thống Chess AI (Trí tuệ nhân tạo chơi cờ vua) với hai phương pháp tìm kiếm chính: Alpha-Beta Pruning và Monte Carlo Tree Search (MCTS). Mục tiêu của dự án là xây dựng một môi trường chơi cờ vua hoàn chỉnh cùng hai agent AI với điểm mạnh khác nhau, sau đó so sánh hiệu suất giữa chúng. Alpha-Beta là một thuật toán cổ điển dựa trên minimax với các tối ưu hóa như move ordering, transposition table và quiescence search. MCTS là một phương pháp hiện đại áp dụng bốn giai đoạn: Selection (sử dụng UCB1), Expansion, Simulation (rollout ngẫu nhiên), và Backpropagation.
+
+Chúng tôi sử dụng thư viện \texttt{python-chess} cho chức năng chơi cờ, xây dựng các agent độc lập, và phát triển giao diện người dùng đồ họa (GUI) với Tkinter cùng công cụ trực quan hóa dữ liệu bằng Matplotlib. Hệ thống được kiểm thử toàn diện với 5 unit test và được so sánh qua các trận đấu giữa hai agent. Kết quả cho thấy Alpha-Beta thường chiếm ưu thế ở độ sâu 4 với quiescence search, trong khi MCTS cần một lượng lớn iterations (1500+) để cạnh tranh.
+
+\textbf{Từ khóa (Keywords):} Chess AI, Alpha-Beta Pruning, Monte Carlo Tree Search, Game Playing, Minimax, UCB1.
+\end{abstract}

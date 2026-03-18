@@ -1,0 +1,109 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}    % Use utf8 input encoding
+\usepackage[T5]{fontenc}       % Output font encoding for Vietnamese
+\usepackage[vietnamese]{babel} % Vietnamese language support
+\usepackage{amsmath}           % Math fonts and text in math mode
+\usepackage{mathptmx}          % Times New Roman font equivalent
+\usepackage{geometry}
+\geometry{
+    top=2.54cm,
+    bottom=2.54cm,
+    left=2.54cm,
+    right=2.54cm
+}
+\usepackage{setspace}          % Line spacing
+\usepackage{parskip}           % Paragraph spacing
+\setlength{\parskip}{6pt}      % 6pt paragraph spacing
+\setstretch{1.5}               % 1.5 line spacing
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{caption}
+
+% --- Document Formatting / Font Sizes ---
+\titleformat{\section}{\fontsize{16pt}{19pt}\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\fontsize{14pt}{17pt}\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\fontsize{13pt}{16pt}\bfseries}{\thesubsubsection}{1em}{}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\fontsize{11pt}{13pt}\selectfont\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Define colors for code listings
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+
+% Optional: Change section heading styles
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\begin{document}
+
+% --- Cover Page ---
+\input{sections/00_cover}
+
+% --- Abstract ---
+\newpage
+\input{sections/00_abstract}
+
+% --- Table of Contents ---
+\newpage
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\listoftables
+\newpage
+
+% --- Main Content ---
+\pagenumbering{arabic}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_background}
+\input{sections/04_methodologies}
+\input{sections/05_results}
+\input{sections/06_limitations}
+\input{sections/07_conclusion}
+\input{sections/08_references}
+
+\end{document}
