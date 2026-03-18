@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import os
 
 import chess
 
@@ -123,6 +124,73 @@ def run_play(args: argparse.Namespace) -> None:
     print(f"Result: {board.result(claim_draw=True)}")
 
 
+def run_play_ui(args: argparse.Namespace) -> None:
+    from .ui import play_game_ui
+
+    white_agent = (
+        None
+        if args.white == "human"
+        else _create_agent(args.white, args, seed_offset=1)
+    )
+    black_agent = (
+        None
+        if args.black == "human"
+        else _create_agent(args.black, args, seed_offset=2)
+    )
+
+    title = f"Chess: {args.white} (White) vs {args.black} (Black)"
+    play_game_ui(white_agent, black_agent, title)
+
+
+def run_compare_plots(args: argparse.Namespace) -> None:
+    from .visualization import show_comparison_window, save_comparison_plot
+
+    config = MatchConfig(
+        max_plies=args.max_plies,
+        random_opening_plies=args.random_opening_plies,
+        seed=args.seed,
+    )
+
+    print(f"Running {args.games} games...")
+    summary = compare_agents(
+        games=args.games,
+        alpha_beta_factory=lambda: AlphaBetaAgent(
+            config=AlphaBetaConfig(
+                max_depth=args.ab_depth, quiescence_depth=args.ab_quiescence_depth
+            )
+        ),
+        mcts_factory=lambda: MCTSAgent(
+            config=MCTSConfig(
+                iterations=args.mcts_iterations,
+                exploration_constant=args.mcts_exploration,
+                rollout_depth=args.mcts_rollout_depth,
+            ),
+            seed=args.seed,
+        ),
+        config=config,
+    )
+
+    print("\n=== Comparison Summary ===")
+    print(f"Games: {summary.games}")
+    print(f"Alpha-Beta points: {summary.alpha_beta_points}")
+    print(f"MCTS points: {summary.mcts_points}")
+    print(f"Alpha-Beta wins: {summary.alpha_beta_wins}")
+    print(f"MCTS wins: {summary.mcts_wins}")
+    print(f"Draws: {summary.draws}")
+
+    if args.output_json:
+        with open(args.output_json, "w", encoding="utf-8") as f:
+            json.dump(summary_to_dict(summary), f, indent=2)
+        print(f"Saved detailed report to: {args.output_json}")
+
+    if args.output_plot:
+        save_comparison_plot(summary, args.output_plot)
+        print(f"Saved plot to: {args.output_plot}")
+    else:
+        print("\nDisplaying comparison visualization...")
+        show_comparison_window(summary)
+
+
 def _get_human_move(board: chess.Board) -> chess.Move:
     while True:
         raw = input("Enter your move (UCI, e.g., e2e4): ").strip()
@@ -142,8 +210,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="HW2 Chess AI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    # Compare command (text output)
     compare_parser = subparsers.add_parser(
-        "compare", help="Run Alpha-Beta vs MCTS matches"
+        "compare", help="Run Alpha-Beta vs MCTS matches (text output)"
     )
     compare_parser.add_argument("--games", type=int, default=10)
     compare_parser.add_argument("--ab-depth", type=int, default=4)
@@ -157,7 +226,29 @@ def build_parser() -> argparse.ArgumentParser:
     compare_parser.add_argument("--output-json", type=str, default="")
     compare_parser.set_defaults(func=run_compare)
 
-    play_parser = subparsers.add_parser("play", help="Play or watch a game")
+    # Compare with plots command
+    compare_plots_parser = subparsers.add_parser(
+        "compare-plots", help="Run comparison with visualization plots"
+    )
+    compare_plots_parser.add_argument("--games", type=int, default=10)
+    compare_plots_parser.add_argument("--ab-depth", type=int, default=4)
+    compare_plots_parser.add_argument("--ab-quiescence-depth", type=int, default=3)
+    compare_plots_parser.add_argument("--mcts-iterations", type=int, default=1500)
+    compare_plots_parser.add_argument(
+        "--mcts-exploration", type=float, default=1.41421356237
+    )
+    compare_plots_parser.add_argument("--mcts-rollout-depth", type=int, default=40)
+    compare_plots_parser.add_argument("--max-plies", type=int, default=300)
+    compare_plots_parser.add_argument("--random-opening-plies", type=int, default=2)
+    compare_plots_parser.add_argument("--seed", type=int, default=42)
+    compare_plots_parser.add_argument("--output-json", type=str, default="")
+    compare_plots_parser.add_argument("--output-plot", type=str, default="")
+    compare_plots_parser.set_defaults(func=run_compare_plots)
+
+    # Play command (text-based)
+    play_parser = subparsers.add_parser(
+        "play", help="Play or watch a game (text-based)"
+    )
     play_parser.add_argument(
         "--white", choices=["human", "alphabeta", "mcts", "random"], default="human"
     )
@@ -171,6 +262,24 @@ def build_parser() -> argparse.ArgumentParser:
     play_parser.add_argument("--mcts-rollout-depth", type=int, default=40)
     play_parser.add_argument("--seed", type=int, default=42)
     play_parser.set_defaults(func=run_play)
+
+    # Play UI command (graphical)
+    play_ui_parser = subparsers.add_parser(
+        "play-ui", help="Play a game with graphical UI"
+    )
+    play_ui_parser.add_argument(
+        "--white", choices=["human", "alphabeta", "mcts", "random"], default="human"
+    )
+    play_ui_parser.add_argument(
+        "--black", choices=["human", "alphabeta", "mcts", "random"], default="alphabeta"
+    )
+    play_ui_parser.add_argument("--ab-depth", type=int, default=4)
+    play_ui_parser.add_argument("--ab-quiescence-depth", type=int, default=3)
+    play_ui_parser.add_argument("--mcts-iterations", type=int, default=1500)
+    play_ui_parser.add_argument("--mcts-exploration", type=float, default=1.41421356237)
+    play_ui_parser.add_argument("--mcts-rollout-depth", type=int, default=40)
+    play_ui_parser.add_argument("--seed", type=int, default=42)
+    play_ui_parser.set_defaults(func=run_play_ui)
 
     return parser
 
