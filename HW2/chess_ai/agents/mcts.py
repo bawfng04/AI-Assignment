@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import math
 import random
+import time
 
 import chess
 
@@ -89,18 +90,27 @@ class MCTSAgent(BaseAgent):
         super().__init__(name="MCTS")
         self.config = config or MCTSConfig()
         self.rng = random.Random(seed)
+        self._nodes_created = 0
 
     def choose_move(self, board: chess.Board) -> chess.Move | None:
+        started_at = time.perf_counter()
+        self._nodes_created = 0
         legal = list(board.legal_moves)
         if not legal:
+            self.last_search_stats.move_time_ms = (
+                time.perf_counter() - started_at
+            ) * 1000.0
+            self.last_search_stats.nodes_visited = 0
             return None
 
         root = MCTSNode(board=board.copy(stack=False), root_player=board.turn)
+        self._nodes_created = 1
 
         for _ in range(self.config.iterations):
             node = self._select(root)
             if not node.is_terminal() and not node.is_fully_expanded():
                 node = node.expand(self.rng)
+                self._nodes_created += 1
 
             reward = self._simulate(
                 node.board.copy(stack=False), root_player=root.root_player
@@ -108,6 +118,10 @@ class MCTSAgent(BaseAgent):
             self._backpropagate(node, reward)
 
         best_child = max(root.children, key=lambda n: n.visits, default=None)
+        self.last_search_stats.move_time_ms = (
+            time.perf_counter() - started_at
+        ) * 1000.0
+        self.last_search_stats.nodes_visited = self._nodes_created
         return best_child.move if best_child else self.rng.choice(legal)
 
     def _select(self, node: MCTSNode) -> MCTSNode:

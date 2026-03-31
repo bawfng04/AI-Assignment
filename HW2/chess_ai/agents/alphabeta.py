@@ -31,10 +31,17 @@ class AlphaBetaAgent(BaseAgent):
         self._deadline: float | None = None
         self._tt: dict[str, _TTEntry] = {}
         self._history_heuristic: dict[chess.Move, int] = {}
+        self._nodes_visited = 0
 
     def choose_move(self, board: chess.Board) -> chess.Move | None:
+        started_at = time.perf_counter()
+        self._nodes_visited = 0
         legal_moves = list(board.legal_moves)
         if not legal_moves:
+            self.last_search_stats.move_time_ms = (
+                time.perf_counter() - started_at
+            ) * 1000.0
+            self.last_search_stats.nodes_visited = 0
             return None
 
         self._deadline = (
@@ -51,6 +58,11 @@ class AlphaBetaAgent(BaseAgent):
                     break
         except SearchTimeout:
             pass
+
+        self.last_search_stats.move_time_ms = (
+            time.perf_counter() - started_at
+        ) * 1000.0
+        self.last_search_stats.nodes_visited = self._nodes_visited
 
         return best_move
 
@@ -83,6 +95,7 @@ class AlphaBetaAgent(BaseAgent):
         return best_score, best_move
 
     def _negamax(self, board: chess.Board, depth: int, alpha: int, beta: int) -> int:
+        self._nodes_visited += 1
         self._check_timeout()
 
         term = terminal_score(board)
@@ -133,6 +146,7 @@ class AlphaBetaAgent(BaseAgent):
         return best_score
 
     def _quiescence(self, board: chess.Board, alpha: int, beta: int, depth: int) -> int:
+        self._nodes_visited += 1
         self._check_timeout()
 
         stand_pat = evaluate_board(board)
