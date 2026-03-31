@@ -8,9 +8,9 @@ The Chess AI project now includes:
 2. **Two AI Agents**:
    - Alpha-Beta Pruning with move ordering, transposition table, and quiescence search
    - Monte Carlo Tree Search with UCB1 selection, rollout simulation
-3. **Interactive Graphical UI** - Click-to-move chess board with move history and FEN display
-4. **Comparison Analysis Tools** - Side-by-side performance metrics with interactive plots
-5. **Command-Line Tools** - Flexible CLI for all operations
+3. **Unified Graphical UI** - One window for gameplay and comparison workflows
+4. **Comparison Analysis Tools** - Side-by-side metrics (win rate, average move time, average visited nodes)
+5. **Legacy Command-Line Tools** - Retained for internal debugging
 
 ---
 
@@ -21,23 +21,24 @@ cd HW2
 pip install -r requirements.txt
 ```
 
+## Single Start Command (Recommended)
+
+```bash
+python run.py
+```
+
+When launched, GUI opens immediately and includes all modes in one screen.
+
 ---
 
 ## Features
 
-### 1. Play with Graphical UI
+### 1. Unified GUI Modes
 
-**Interactive chess board with click-to-move interface, move history, and game status display.**
+**Use one window for all tasks: play and compare.**
 
 ```bash
-# Play against Alpha-Beta AI
-python -m chess_ai.main play-ui --white human --black alphabeta --ab-depth 4
-
-# Play against MCTS AI
-python -m chess_ai.main play-ui --white human --black mcts --mcts-iterations 1500
-
-# Watch two AIs play each other
-python -m chess_ai.main play-ui --white alphabeta --black mcts --ab-depth 3 --mcts-iterations 800
+python run.py
 ```
 
 **Features:**
@@ -45,37 +46,50 @@ python -m chess_ai.main play-ui --white alphabeta --black mcts --ab-depth 3 --mc
 - Visual chess board with proper piece symbols
 - Click-to-move piece selection with highlighting
 - Move history with algebraic notation (e.g., e4, Nf3)
-- FEN display for debugging
 - Game status (whose turn, game over conditions)
-- Reset and Resign buttons
+- In-window mode selector:
+  - Human vs Alpha-Beta
+  - Human vs MCTS
+  - Alpha-Beta vs MCTS
+  - Compare methods
+- Essential controls only (AB depth, MCTS iterations, comparison games, seed)
+- Speed presets: Fast / Balanced / Strong
+- Parallel compare workers (CPU core based)
 
-### 2. Compare Agents with Visualization
+### 2. Compare Agents in GUI
 
-**Run multiple games between agents and see comprehensive analysis charts.**
+**Run multiple games from GUI and view summary table + bar chart in the same window.**
 
 ```bash
-# Display interactive plots (recommended for analysis)
-python -m chess_ai.main compare-plots --games 10 \
-  --ab-depth 4 --mcts-iterations 1500 \
-  --output-json results.json
-
-# Save plot to file for reports
-python -m chess_ai.main compare-plots --games 20 \
-  --ab-depth 4 --mcts-iterations 1500 \
-  --output-plot comparison_analysis.png \
-  --output-json detailed_results.json
+python run.py
 ```
 
-**Visualization includes:**
+**Comparison output includes:**
 
-- **Total Score Bar Chart** - Points earned (Alpha-Beta vs MCTS)
-- **Outcome Distribution** - Wins, Draws, Losses breakdown
-- **Cumulative Score Progression** - Score over all games
-- **Game Length Distribution** - Histogram of game durations
-- **Win Rate by Color** - Performance when playing as White vs Black
-- **Statistics Table** - Comprehensive metrics summary
+- **Win Rate** (Alpha-Beta vs MCTS)
+- **Average Move Time** (ms)
+- **Average Nodes Visited** (per move)
+- **Compact bar chart + result table**
 
-### 3. Text-Based Comparison (No UI)
+**Performance controls for faster runs:**
+
+- Preset selector:
+  - Fast (quick demo)
+  - Balanced (default)
+  - Strong (higher quality, slower)
+- Workers: number of CPU processes for parallel compare
+- Max plies: cap game length to bound runtime
+
+### 3. Legacy CLI (Optional)
+
+These commands are kept for compatibility/debugging and are not the primary run flow.
+
+```bash
+python -m chess_ai.main play-ui --white human --black alphabeta --ab-depth 4
+python -m chess_ai.main compare-plots --games 10 --ab-depth 4 --mcts-iterations 1500
+```
+
+### 4. Text-Based Comparison (No UI)
 
 ```bash
 python -m chess_ai.main compare --games 10 \
@@ -85,7 +99,7 @@ python -m chess_ai.main compare --games 10 \
 
 Output: Text summary to console + optional JSON report
 
-### 4. Text-Based Play
+### 5. Text-Based Play
 
 ```bash
 # Human vs AI (command-line input)

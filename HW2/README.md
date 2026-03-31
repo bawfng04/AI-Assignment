@@ -13,7 +13,22 @@ This project implements a full chess environment and two AI agents with a comple
 pip install -r requirements.txt
 ```
 
-## Play with Graphical UI
+## Run (Primary Entry Point)
+
+```bash
+python run.py
+```
+
+The GUI opens directly and includes all modes in one window:
+
+- Human vs Alpha-Beta
+- Human vs MCTS
+- Alpha-Beta vs MCTS
+- Compare methods (multi-game with table + chart)
+
+## Legacy CLI (Optional)
+
+The old CLI is kept for internal debugging compatibility.
 
 ```bash
 # Play against Alpha-Beta AI
