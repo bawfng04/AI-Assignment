@@ -125,21 +125,13 @@ def run_play(args: argparse.Namespace) -> None:
 
 
 def run_play_ui(args: argparse.Namespace) -> None:
-    from .ui import play_game_ui
+    from .ui import launch_unified_ui
 
-    white_agent = (
-        None
-        if args.white == "human"
-        else _create_agent(args.white, args, seed_offset=1)
+    print(
+        "play-ui now launches the unified GUI. "
+        "Configure mode/parameters from the app controls."
     )
-    black_agent = (
-        None
-        if args.black == "human"
-        else _create_agent(args.black, args, seed_offset=2)
-    )
-
-    title = f"Chess: {args.white} (White) vs {args.black} (Black)"
-    play_game_ui(white_agent, black_agent, title)
+    launch_unified_ui()
 
 
 def run_compare_plots(args: argparse.Namespace) -> None:
@@ -265,7 +257,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     # Play UI command (graphical)
     play_ui_parser = subparsers.add_parser(
-        "play-ui", help="Play a game with graphical UI"
+        "play-ui", help="Launch unified graphical UI (legacy-compatible command)"
     )
     play_ui_parser.add_argument(
         "--white", choices=["human", "alphabeta", "mcts", "random"], default="human"

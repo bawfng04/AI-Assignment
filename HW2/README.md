@@ -31,15 +31,11 @@ The GUI opens directly and includes all modes in one window:
 The old CLI is kept for internal debugging compatibility.
 
 ```bash
-# Play against Alpha-Beta AI
-python -m chess_ai.main play-ui --white human --black alphabeta --ab-depth 4
-
-# Play against MCTS AI
-python -m chess_ai.main play-ui --white human --black mcts --mcts-iterations 1500
-
-# Watch AI vs AI match
-python -m chess_ai.main play-ui --white alphabeta --black mcts --ab-depth 3 --mcts-iterations 800
+# Backward-compatible alias: opens the same unified GUI as python run.py
+python -m chess_ai.main play-ui
 ```
+
+Note: legacy flags after `play-ui` are ignored because mode/parameters are configured directly inside the unified GUI.
 
 ## Compare both agents with Plots
 
