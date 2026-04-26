@@ -1,0 +1,88 @@
+{
+  "stats": {
+    "runs": 5.0,
+    "feasible_runs": 5.0,
+    "feasible_rate": 1.0,
+    "avg_soft": 10.523401303857725,
+    "std_soft": 3.424371940594354,
+    "min_soft": 5.52134443047735,
+    "max_soft": 14.47879485721785,
+    "avg_generations": 100
+  },
+  "runs": [
+    {
+      "seed": 40,
+      "generations_run": 100,
+      "best_fitness": 0.07709600708209277,
+      "best_total_penalty": 11.97084035668913,
+      "best_hard_violations": 0,
+      "best_soft_penalty": 11.97084035668913,
+      "json_path": "outputs\\report_ga_seed40\\best_schedule.json",
+      "csv_path": "outputs\\report_ga_seed40\\best_schedule.csv",
+      "plot_path": "outputs\\report_ga_seed40\\fitness_plot.png"
+    },
+    {
+      "seed": 41,
+      "generations_run": 100,
+      "best_fitness": 0.0646045127688797,
+      "best_total_penalty": 14.47879485721785,
+      "best_hard_violations": 0,
+      "best_soft_penalty": 14.47879485721785,
+      "json_path": "outputs\\report_ga_seed41\\best_schedule.json",
+      "csv_path": "outputs\\report_ga_seed41\\best_schedule.csv",
+      "plot_path": "outputs\\report_ga_seed41\\fitness_plot.png"
+    },
+    {
+      "seed": 42,
+      "generations_run": 100,
+      "best_fitness": 0.07075706930561287,
+      "best_total_penalty": 13.13286346952578,
+      "best_hard_violations": 0,
+      "best_soft_penalty": 13.13286346952578,
+      "json_path": "outputs\\report_ga_seed42\\best_schedule.json",
+      "csv_path": "outputs\\report_ga_seed42\\best_schedule.csv",
+      "plot_path": "outputs\\report_ga_seed42\\fitness_plot.png"
+    },
+    {
+      "seed": 43,
+      "generations_run": 100,
+      "best_fitness": 0.1174651480750636,
+      "best_total_penalty": 7.513163405378515,
+      "best_hard_violations": 0,
+      "best_soft_penalty": 7.513163405378515,
+      "json_path": "outputs\\report_ga_seed43\\best_schedule.json",
+      "csv_path": "outputs\\report_ga_seed43\\best_schedule.csv",
+      "plot_path": "outputs\\report_ga_seed43\\fitness_plot.png"
+    },
+    {
+      "seed": 44,
+      "generations_run": 100,
+      "best_fitness": 0.1533426137295438,
+      "best_total_penalty": 5.52134443047735,
+      "best_hard_violations": 0,
+      "best_soft_penalty": 5.52134443047735,
+      "json_path": "outputs\\report_ga_seed44\\best_schedule.json",
+      "csv_path": "outputs\\report_ga_seed44\\best_schedule.csv",
+      "plot_path": "outputs\\report_ga_seed44\\fitness_plot.png"
+    }
+  ],
+  "ga_config": {
+    "population_size": 240,
+    "generations": 420,
+    "tournament_size": 4,
+    "crossover_rate": 0.95,
+    "mutation_rate": 0.2,
+    "elitism_count": 10,
+    "hard_penalty_weight": 1000.0,
+    "soft_penalty_weight": 1.0,
+    "no_improvement_patience": 100,
+    "feasible_streak_patience": 100
+  },
+  "seeds": [
+    40,
+    41,
+    42,
+    43,
+    44
+  ]
+}

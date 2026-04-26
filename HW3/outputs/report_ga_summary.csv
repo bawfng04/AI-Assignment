@@ -1,0 +1,6 @@
+seed,generations_run,best_fitness,best_total_penalty,best_hard_violations,best_soft_penalty,json_path,csv_path,plot_path
+40,100,0.07709600708209277,11.97084035668913,0,11.97084035668913,outputs\report_ga_seed40\best_schedule.json,outputs\report_ga_seed40\best_schedule.csv,outputs\report_ga_seed40\fitness_plot.png
+41,100,0.0646045127688797,14.47879485721785,0,14.47879485721785,outputs\report_ga_seed41\best_schedule.json,outputs\report_ga_seed41\best_schedule.csv,outputs\report_ga_seed41\fitness_plot.png
+42,100,0.07075706930561287,13.13286346952578,0,13.13286346952578,outputs\report_ga_seed42\best_schedule.json,outputs\report_ga_seed42\best_schedule.csv,outputs\report_ga_seed42\fitness_plot.png
+43,100,0.1174651480750636,7.513163405378515,0,7.513163405378515,outputs\report_ga_seed43\best_schedule.json,outputs\report_ga_seed43\best_schedule.csv,outputs\report_ga_seed43\fitness_plot.png
+44,100,0.1533426137295438,5.52134443047735,0,5.52134443047735,outputs\report_ga_seed44\best_schedule.json,outputs\report_ga_seed44\best_schedule.csv,outputs\report_ga_seed44\fitness_plot.png
