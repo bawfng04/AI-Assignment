@@ -1,0 +1,54 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {section}{\numberline {1}Giới thiệu}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Mục tiêu \& Yêu cầu}{1}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Động lực thực hiện}{1}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Phạm vi của dự án}{2}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Cấu trúc bài báo}{2}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Các nghiên cứu liên quan}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Bài toán Timetabling}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Genetic Algorithm cho Timetabling}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Mã hóa Chromosome}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Xử lý Ràng buộc trong GA}{4}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Cơ sở lý thuyết}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Genetic Algorithm (GA)}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Biểu diễn Chromosome cho Timetabling}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Hàm Fitness}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Tournament Selection}{6}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Uniform Crossover}{6}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Elitism}{6}{subsection.3.6}%
+\contentsline {section}{\numberline {4}Phương pháp đề xuất}{6}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Tổng quan kiến trúc hệ thống}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Sinh dữ liệu đầu vào}{7}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Phòng học}{7}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Giảng viên và môn học}{7}{subsubsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.3}Offerings}{7}{subsubsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.3}Mã hóa Chromosome}{8}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Cấu trúc Gene}{8}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Ngày hợp lệ}{8}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}Repair Function}{9}{subsubsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.4}Các toán tử GA}{9}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}Tournament Selection}{9}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}Uniform Crossover}{9}{subsubsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.3}Mutation}{10}{subsubsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.5}GA Engine}{10}{subsection.4.5}%
+\contentsline {subsubsection}{\numberline {4.5.1}Khởi tạo thông minh (Heuristic Seeding)}{10}{subsubsection.4.5.1}%
+\contentsline {subsubsection}{\numberline {4.5.2}Cơ chế sửa lỗi (Repair Mechanism)}{10}{subsubsection.4.5.2}%
+\contentsline {subsubsection}{\numberline {4.5.3}Điều kiện dừng sớm (Early Stopping)}{11}{subsubsection.4.5.3}%
+\contentsline {subsection}{\numberline {4.6}Tham số GA}{11}{subsection.4.6}%
+\contentsline {section}{\numberline {5}Kết quả và Phân tích}{11}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Thiết lập Thực nghiệm}{11}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Phân tích Hội tụ}{12}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Kết quả Multi-seed}{12}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Phân tích Tổng hợp}{13}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Biểu đồ Fitness}{13}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Phân tích Ràng buộc}{14}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}Kết luận từ Thực nghiệm}{15}{subsection.5.7}%
+\contentsline {section}{\numberline {6}Hạn chế và Thách thức}{15}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Hạn chế hiện tại}{15}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Thách thức kỹ thuật}{16}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Cơ hội cải tiến trong tương lai}{16}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Kết luận và Hướng phát triển}{16}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Kết luận}{16}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Đóng góp Chính}{17}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Hướng phát triển tương lai}{17}{subsection.7.3}%
+\contentsline {section}{\numberline {8}Tài liệu tham khảo}{18}{section.8}%

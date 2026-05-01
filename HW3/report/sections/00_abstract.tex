@@ -1,0 +1,8 @@
+% !TEX root = ../main.tex
+\begin{abstract}
+Bài toán xếp lịch lớp học (University Course Timetabling) là một bài toán tối ưu tổ hợp thuộc lớp NP-hard với không gian tìm kiếm cực kỳ lớn và nhiều ràng buộc phức tạp. Báo cáo này trình bày việc thiết kế và cài đặt hệ thống xếp lịch tự động sử dụng Thuật toán Di truyền (Genetic Algorithm - GA) để tối ưu hóa việc phân bổ tài nguyên giảng đường và thời gian biểu. 
+
+Hệ thống được xây dựng với cấu hình thực tế bao gồm 15 môn học, 10 giảng viên, 30 phòng học (với các loại kích thước khác nhau) và các ràng buộc về thời gian học không liền kề. Chúng tôi đề xuất sử dụng chiến lược lai ghép đồng nhất (Uniform Crossover) kết hợp với kỹ thuật khởi tạo dựa trên heuristic (Heuristic Seeding) để tăng tốc độ hội tụ. Kết quả thực nghiệm trên nhiều bộ tham số ngẫu nhiên (seeds) cho thấy thuật toán luôn tìm được lịch xếp hợp lệ (0 vi phạm ràng buộc cứng) với độ thích nghi cao và phân bổ tải trọng phòng học đồng đều. Hệ thống cũng tích hợp giao diện Streamlit giúp người dùng dễ dàng theo dõi quá trình tiến hóa và xuất kết quả lịch học chi tiết.
+
+\textbf{Từ khóa:} Thuật toán Di truyền, Xếp lịch lớp học, Thỏa mãn ràng buộc, Tối ưu hóa, Trí tuệ Nhân tạo.
+\end{abstract}

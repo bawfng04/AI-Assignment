@@ -1,0 +1,47 @@
+% !TEX root = ../main.tex
+\section{Kết luận \& Hướng phát triển trong tương lai}
+
+\subsection{Kết luận}
+Dự án đã hoàn thành thành công việc xây dựng một hệ thống Chess AI so sánh hai thuật toán trò chơi cơ bản:
+
+\begin{itemize}
+    \item \textbf{Triển khai Alpha-Beta Pruning:} Cài đặt hoàn chỉnh với negamax, transposition table, quiescence search, move ordering, và history heuristic. Agent đạt deep-seeking capability với bounded resources.
+
+    \item \textbf{Triển khai MCTS:} Cài đặt đầy đủ 4 giai đoạn (selection, expansion, simulation, backpropagation) với UCB1 formula và rollout policy thông minh. Agent thể hiện khả năng tự cải tiến qua nhiều iterations.
+
+    \item \textbf{Kiến trúc Modular:} Hệ thống dễ mở rộng, cho phép thêm agents mới (Random, Neural Network-based, v.v.) mà không cần sửa mã hiện tại.
+
+    \item \textbf{So sánh Thực nghiệm:} Chạy các trận đấu, ghi lại dữ liệu (win rate, game length, computation time), trực quan hóa bằng 6 biểu đồ matplotlib.
+
+    \item \textbf{Giao diện Tương tác:} GUI Tkinter cho phép người dùng chơi cờ với AI, xem move history, FEN board state.
+
+    \item \textbf{Tài liệu Toàn diện:} README, FEATURES.md, và báo cáo LaTeX chi tiết về kiến trúc, thuật toán, và kết quả.
+\end{itemize}
+
+\subsection{Đóng góp Chính}
+\begin{itemize}
+    \item Chứng minh Alpha-Beta và MCTS là hai phương pháp mạnh mẽ với điểm mạnh khác nhau, phù hợp cho các ứng dụng khác nhau.
+    \item Chỉ ra rằng hybrid approaches (kết hợp deterministic search với neural networks, như AlphaZero) có tiềm năng lớn cho future game-playing AI.
+    \item Cung cấp một nền tảng giáo dục rõ ràng để hiểu sâu về game-playing algorithms.
+\end{itemize}
+
+\subsection{Hướng phát triển trong tương lai}
+\begin{itemize}
+    \item \textbf{Tối ưu hóa Tốc độ:} Chuyển đổi code Python time-critical sang C++ extension hoặc Cython để tăng tốc độ 10-100x.
+
+    \item \textbf{Neural Network Evaluation:} Huấn luyện neural network để học hàm đánh giá từ games của Stockfish, thay vì sử dụng piece-square tables cơ bản.
+
+    \item \textbf{Iterative Deepening Time Management:} Triển khai iterative deepening với time management để agent sử dụng thời gian có sẵn tối đa hóa độ sâu tìm kiếm.
+
+    \item \textbf{Parallel Search:} Sử dụng multi-threading hoặc GPU để chạy song song nhiều branches của cây tìm kiếm (Shared Hash Table, Principal Variation Splitting).
+
+    \item \textbf{Opening Book \& Endgame Tablebase:} Tích hợp mở game từ Polyglot format và endgame tables (syzygy) để uênh hiệu suất.
+
+    \item \textbf{Bayesian Optimization:} Tự động tune hyperparameters (evaluation weights, quiescence depth, C in UCB1) dựa trên self-play results.
+
+    \item \textbf{Advanced Features:} Thêm lichess integration, analyze mode, pgn import/export, để hệ thống trở thành một player/engine đầy đủ.
+\end{itemize}
+
+\subsection{Lời nhận xét cuối cùng}
+Xây dựng game-playing AI là một công việc phức tạp đòi hỏi sự kết hợp của lý thuyết thuật toán, implementation engineering, và tuning khéo léo. Dự án này chỉ dạo chút bề mặt của lĩnh vực rộng lớn này. Tuy nhiên, nó cung cấp một nền tảng vững chắc để hiểu và mở rộng thêm. Cộng đồng chess programming (ccrl.chessdom.com, computer-chess.org) tiếp tục phát triển các engine mạnh, mỗi phiên bản mới thường kỹ năng hơn phiên bản cũ qua các nâng cấp trong evaluation, search strategy, và tuning. Công việc học tập không bao giờ dừng!
+

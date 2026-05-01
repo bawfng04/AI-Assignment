@@ -1,0 +1,153 @@
+% !TEX root = ../main.tex
+\section{Phương pháp đề xuất}
+
+\subsection{Tổng quan kiến trúc hệ thống}
+Hệ thống được thiết kế theo mô hình modular với các thành phần chính:
+
+\begin{itemize}
+    \item \textbf{Cấu hình (\texttt{config.py}):} Định nghĩa các tham số hệ thống qua các lớp \texttt{ProblemConfig}, \texttt{GAConfig}, \texttt{RunConfig}.
+    \item \textbf{Mô hình (\texttt{models.py}):} Các cấu trúc dữ liệu chính như \texttt{Room}, \texttt{Offering}, \texttt{SessionAssignment}, \texttt{OfferingGene}, và \texttt{Chromosome}.
+    \item \textbf{Sinh dữ liệu (\texttt{data\_generation.py}):} Tạo lập dữ liệu giả lập về phòng học, giảng viên và các lớp học phần.
+    \item \textbf{Mã hóa (\texttt{encoding.py}):} Chuyển đổi dữ liệu sang dạng chromosome, xử lý tạo gene và sửa lỗi (repair).
+    \item \textbf{Ràng buộc (\texttt{constraints.py}):} Đánh giá các vi phạm ràng buộc cứng và tính toán hàm phạt mềm.
+    \item \textbf{Toán tử (\texttt{operators.py}):} Triển khai các cơ chế chọn lọc, lai ghép và đột biến.
+    \item \textbf{Bộ máy GA (\texttt{ga\_engine.py}):} Điều phối vòng lặp tiến hóa với các chiến lược như heuristic seeding và dừng sớm.
+    \item \textbf{Trực quan hóa (\texttt{visualization.py}):} Xây dựng biểu đồ theo dõi quá trình hội tụ.
+    \item \textbf{Xuất dữ liệu (\texttt{export.py}):} Kết xuất kết quả sang các định dạng JSON, CSV hoặc bảng biểu.
+\end{itemize}
+
+\subsection{Sinh dữ liệu đầu vào}
+
+\subsubsection{Phòng học}
+30 phòng học được sinh ngẫu nhiên với:
+\begin{itemize}
+    \item Khoảng 40\% phòng lớn (size 1), còn lại phòng nhỏ (size 0).
+    \item Khoảng 92\% phòng khả dụng, 8\% không khả dụng.
+    \item Đảm bảo ít nhất 1 phòng khả dụng.
+\end{itemize}
+
+\subsubsection{Giảng viên và môn học}
+15 môn học được phân bổ cho 10 giảng viên sao cho mỗi giảng viên dạy tối đa 3 môn. Nếu không đủ giảng viên, hệ thống tự động chọn giảng viên có ít môn nhất.
+
+\subsubsection{Offerings}
+30 offerings được sinh ngẫu nhiên, mỗi offering gồm:
+\begin{itemize}
+    \item \texttt{course\_id}: Ngẫu nhiên từ 1--15 (một môn có thể lặp nhiều lần).
+    \item \texttt{section\_id}: Ngẫu nhiên từ 1--10.
+    \item \texttt{professor\_id}: Theo mapping course-professor.
+    \item \texttt{class\_registration\_size}: 0 (nhỏ) hoặc 1 (lớn) với xác suất ~48\%/52\%.
+\end{itemize}
+
+\subsection{Mã hóa Chromosome}
+
+\subsubsection{Cấu trúc Gene}
+Mỗi gene là một \texttt{OfferingGene} chứa 2 \texttt{SessionAssignment}:
+\begin{lstlisting}[language=Python, caption=Cấu trúc Gene]
+@dataclass(frozen=True)
+class SessionAssignment:
+    day: int        # 0-4 (Mon-Fri)
+    timeslot: int   # 0-5 (6 slots per day)
+    room_id: int    # 1-30
+
+@dataclass(frozen=True)
+class OfferingGene:
+    session_a: SessionAssignment
+    session_b: SessionAssignment
+\end{lstlisting}
+
+\subsubsection{Ngày hợp lệ}
+Hai ngày hợp lệ phải cách nhau ít nhất 2:
+\begin{lstlisting}[language=Python, caption=Kiểm tra ngày hợp lệ]
+def is_valid_day_pair(day_a: int, day_b: int) -> bool:
+    return day_a != day_b and abs(day_a - day_b) >= 2
+\end{lstlisting}
+
+Các cặp ngày hợp lệ: (Mon, Wed), (Mon, Thu), (Mon, Fri), (Tue, Thu), (Tue, Fri), (Wed, Fri).
+
+\subsubsection{Repair Function}
+Sau crossover và mutation, chromosome được repair để đảm bảo:
+\begin{itemize}
+    \item Ngày hợp lệ (cách nhau $\geq$ 2 ngày).
+    \item Room ID hợp lệ (tồn tại trong danh sách phòng).
+    \item Room size phù hợp với class registration size.
+    \item Timeslot và day nằm trong phạm vi hợp lệ.
+\end{itemize}
+
+\subsection{Các toán tử GA}
+
+\subsubsection{Tournament Selection}
+Chọn $k=4$ cá thể ngẫu nhiên, lấy cá thể có tổng penalty thấp nhất:
+\begin{lstlisting}[language=Python, caption=Tournament Selection]
+def tournament_selection(population, penalties, tournament_size, rng):
+    chosen = [rng.randrange(len(population)) for _ in range(tournament_size)]
+    best_idx = min(chosen, key=lambda idx: penalties[idx])
+    return list(population[best_idx])
+\end{lstlisting}
+
+\subsubsection{Uniform Crossover}
+Lai ghép gene-by-gene với xác suất 50/50:
+\begin{lstlisting}[language=Python, caption=Uniform Crossover]
+for index, (gene_a, gene_b) in enumerate(zip(parent_a, parent_b)):
+    if rng.random() < 0.5:
+        child_a.append(gene_a)
+        child_b.append(gene_b)
+    else:
+        child_a.append(gene_b)
+        child_b.append(gene_a)
+\end{lstlisting}
+
+\subsubsection{Mutation}
+4 loại mutation được chọn ngẫu nhiên:
+\begin{itemize}
+    \item \textbf{room:} Thay đổi phòng của một session.
+    \item \textbf{slot:} Thay đổi timeslot của một session.
+    \item \textbf{day\_pair:} Thay đổi cặp ngày.
+    \item \textbf{mixed:} Kết hợp nhiều thay đổi.
+\end{itemize}
+Ngoài ra, có xác suất $0.4 \times \text{mutation\_rate}$ để swap session giữa 2 gene.
+
+\subsection{GA Engine}
+
+
+\subsubsection{Khởi tạo thông minh (Heuristic Seeding)}
+Thay vì khởi tạo quần thể hoàn toàn ngẫu nhiên, hệ thống sử dụng tỷ lệ 70/30 giữa các cá thể được tạo bằng heuristic và ngẫu nhiên. Các cá thể heuristic được đảm bảo:
+\begin{itemize}
+    \item Cặp ngày học luôn cách nhau ít nhất 1 ngày trống.
+    \item Phòng học được chọn phù hợp với sĩ số lớp và trạng thái trống của phòng.
+\end{itemize}
+Điều này giúp GA bắt đầu từ một vùng không gian nghiệm có chất lượng cao, giảm đáng kể số thế hệ cần thiết để hội tụ.
+
+\subsubsection{Cơ chế sửa lỗi (Repair Mechanism)}
+Sau các toán tử lai ghép và đột biến, một số cá thể có thể vi phạm các ràng buộc cơ bản. Hệ thống áp dụng hàm \texttt{repair\_chromosome} để:
+\begin{itemize}
+    \item Điều chỉnh cặp ngày học nếu chúng trùng nhau hoặc liền kề.
+    \item Rà soát và gán lại phòng học nếu phòng cũ không đủ chỗ hoặc không khả dụng.
+\end{itemize}
+Cơ chế này chuyển đổi một nghiệm không hợp lệ thành một nghiệm hợp lệ hoặc "gần hợp lệ", giúp thuật toán tập trung vào việc tối ưu hóa các ràng buộc mềm phức tạp hơn như phân bổ tải trọng.
+
+\subsubsection{Điều kiện dừng sớm (Early Stopping)}
+GA dừng sớm khi:
+\begin{itemize}
+    \item Không cải thiện thêm sau 100 thế hệ (\texttt{no\_improvement\_patience}).
+    \item Duy trì trạng thái hợp lệ liên tục trong 100 thế hệ (\texttt{feasible\_streak\_patience}).
+\end{itemize}
+
+\subsection{Tham số GA}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Tham số} & \textbf{Giá trị} \\ \hline
+        Population size & 240 \\ \hline
+        Generations & 420 (max) \\ \hline
+        Tournament size & 4 \\ \hline
+        Crossover rate & 0.95 \\ \hline
+        Mutation rate & 0.20 \\ \hline
+        Elitism count & 10 \\ \hline
+        Hard penalty weight & 1000.0 \\ \hline
+        Soft penalty weight & 1.0 \\ \hline
+        No improvement patience & 100 \\ \hline
+        Feasible streak patience & 100 \\ \hline
+    \end{tabular}
+    \caption{Các tham số GA sử dụng trong thực nghiệm.}
+\end{table}

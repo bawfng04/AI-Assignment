@@ -1,0 +1,23 @@
+% !TEX root = ../main.tex
+\section{Hạn chế và Thách thức}
+
+\subsection{Hạn chế hiện tại}
+Mặc dù hệ thống hoạt động tốt trên quy mô 15 môn học, vẫn còn một số hạn chế cần xem xét:
+\begin{itemize}
+    \item \textbf{Hiệu suất khi quy mô tăng (Scalability):} Khi số lượng môn học tăng lên hàng trăm, không gian tìm kiếm sẽ bùng nổ. Phương pháp GA thuần túy có thể gặp khó khăn trong việc tìm ra lịch không xung đột nếu không được tối ưu hóa bằng lập trình song song hoặc các toán tử đặc thù hơn.
+    \item \textbf{Độ phức tạp của ràng buộc mềm:} Hiện tại các ràng buộc mềm chỉ tập trung vào phân bổ tải trọng. Các yêu cầu thực tế hơn như "giảng viên ưu tiên dạy buổi sáng" hay "các môn liên quan nên học cùng phòng" chưa được tích hợp sâu.
+    \item \textbf{Tính ngẫu nhiên:} Mặc dù sử dụng seed để đảm bảo khả năng tái lập, kết quả vẫn phụ thuộc vào quá trình ngẫu nhiên. Một số seed "xấu" có thể yêu cầu nhiều thế hệ hơn để hội tụ.
+\end{itemize}
+
+\subsection{Thách thức kỹ thuật}
+\begin{itemize}
+    \item \textbf{Xung đột tài nguyên chặt:} Khi tỷ lệ số lớp học trên số phòng học khả dụng tiệm cận 1, việc tìm ra một lịch hợp lệ trở thành một bài toán thỏa mãn ràng buộc (CSP) cực kỳ khó khăn.
+    \item \textbf{Cân bằng giữa Exploration và Exploitation:} Việc sử dụng quá nhiều cơ chế sửa lỗi (repair) có thể làm giảm tính đa dạng của quần thể (diversity), dẫn đến hiện tượng hội tụ sớm vào cực trị địa phương (local optimum).
+\end{itemize}
+
+\subsection{Cơ hội cải tiến trong tương lai}
+\begin{itemize}
+    \item \textbf{Tham số thích nghi (Adaptive parameters):} Tự động điều chỉnh tỷ lệ đột biến và lai ghép dựa trên độ đa dạng của quần thể.
+    \item \textbf{Thuật toán lai (Hybrid GA):} Kết hợp GA với các kỹ thuật tìm kiếm cục bộ (Local Search) hoặc Hill Climbing để cải thiện nhanh chóng các ràng buộc mềm.
+    \item \textbf{Tối ưu hóa đa mục tiêu:} Sử dụng các thuật toán như NSGA-II để tối ưu hóa đồng thời nhiều mục tiêu đối nghịch nhau.
+\end{itemize}

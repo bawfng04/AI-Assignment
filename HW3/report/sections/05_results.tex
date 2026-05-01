@@ -1,0 +1,129 @@
+% !TEX root = ../main.tex
+\section{Kết quả và Phân tích}
+
+\subsection{Thiết lập Thực nghiệm}
+Thực nghiệm chạy trên 5 seed khác nhau (40, 41, 42, 43, 44) với cùng cấu hình GA:
+\begin{itemize}
+    \item Population size: 240
+    \item Generations: 420 (với early stopping)
+    \item Crossover rate: 0.95, Mutation rate: 0.2
+\end{itemize}
+
+Bảng \ref{tab:summary_results} tổng hợp các chỉ số hiệu suất trung bình đạt được:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|}
+    \hline
+    \textbf{Chỉ số} & \textbf{Giá trị trung bình} \\ \hline
+    Tỷ lệ tìm thấy lịch hợp lệ (Feasible Rate) & 100\% \\ \hline
+    Số vi phạm ràng buộc cứng (Hard Violations) & 0.0 \\ \hline
+    Phạt mềm trung bình (Avg Soft Penalty) & 10.52 \\ \hline
+    Độ lệch chuẩn phạt mềm (Std Soft Penalty) & 3.42 \\ \hline
+    Số thế hệ chạy trung bình (Avg Generations) & 100 \\ \hline
+    \end{tabular}
+    \caption{Tổng hợp kết quả thực nghiệm trên 5 seed.}
+    \label{tab:summary_results}
+\end{table}
+
+\subsection{Phân tích Hội tụ}
+\begin{itemize}
+    \item Elitism = 10, hard penalty weight = 1000, soft penalty weight = 1.
+\end{itemize}
+
+\subsection{Kết quả Multi-seed}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        \textbf{Seed} & \textbf{Generations} & \textbf{Best Fitness} & \textbf{Total Penalty} & \textbf{Hard Viol.} & \textbf{Soft Penalty} \\ \hline
+        40 & 100 & 0.0771 & 11.9708 & 0 & 11.9708 \\ \hline
+        41 & 100 & 0.0646 & 14.4788 & 0 & 14.4788 \\ \hline
+        42 & 100 & 0.0708 & 13.1329 & 0 & 13.1329 \\ \hline
+        43 & 100 & 0.1175 & 7.5132 & 0 & 7.5132 \\ \hline
+        44 & 100 & 0.1533 & 5.5213 & 0 & 5.5213 \\ \hline
+    \end{tabular}
+    \caption{Kết quả GA trên 5 seed khác nhau.}
+\end{table}
+
+\subsection{Phân tích Tổng hợp}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Chỉ số} & \textbf{Giá trị} \\ \hline
+        Số lần chạy & 5 \\ \hline
+        Lịch hợp lệ (hard=0) & 5/5 (100\%) \\ \hline
+        Soft penalty trung bình & 10.5234 \\ \hline
+        Soft penalty độ lệch chuẩn & 3.4244 \\ \hline
+        Soft penalty nhỏ nhất & 5.5213 (seed 44) \\ \hline
+        Soft penalty lớn nhất & 14.4788 (seed 41) \\ \hline
+        Số thế hệ trung bình & 100 \\ \hline
+    \end{tabular}
+    \caption{Thống kê tổng hợp trên 5 seed.}
+\end{table}
+
+\textbf{Phân tích:}
+\begin{itemize}
+    \item \textbf{Tỷ lệ hợp lệ 100\%:} Tất cả 5 seed đều tìm được lịch không vi phạm ràng buộc cứng. Điều này chứng tỏ heuristic seeding kết hợp repair function hoạt động hiệu quả.
+    \item \textbf{Soft penalty dao động:} Từ 5.52 đến 14.48, cho thấy chất lượng lịch phụ thuộc vào seed. Seed 44 cho kết quả tốt nhất.
+    \item \textbf{Hội tụ nhanh:} GA chỉ chạy 100 thế hệ (trên tối đa 420) trước khi early stopping trigger. Điều này cho thấy heuristic seeding đã giúp GA tiếp cận nghiệm hợp lệ rất nhanh.
+\end{itemize}
+
+\subsection{Biểu đồ Fitness}
+
+Biểu đồ Hình \ref{fig:fitness_plot} cho thấy quá trình hội tụ của thuật toán:
+\begin{itemize}
+    \item Độ thích nghi (Fitness) tốt nhất đạt giá trị cao ngay từ những thế hệ đầu tiên nhờ chiến lược khởi tạo bằng heuristic (heuristic seeding).
+    \item Số lượng vi phạm ràng buộc cứng (hard violations) duy trì ở mức 0 xuyên suốt quá trình, chứng tỏ tính hiệu quả của bộ lọc dữ liệu ban đầu và hàm sửa lỗi.
+    \item Độ thích nghi trung bình (average fitness) cải thiện dần qua thời gian, cho thấy quần thể đang tiến tới việc tối ưu hóa các ràng buộc mềm để nâng cao chất lượng lịch xếp.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/fitness_plot.png}
+    \caption{Biểu đồ quá trình tiến hóa của Fitness và số lượng vi phạm ràng buộc cứng qua các thế hệ.}
+    \label{fig:fitness_plot}
+\end{figure}
+
+Để đánh giá tính ổn định của thuật toán, chúng tôi thực hiện chạy thực nghiệm trên 5 seed khác nhau. Kết quả so sánh về chất lượng lịch (Soft Penalty) và tốc độ hội tụ được thể hiện trong Hình \ref{fig:comparison}.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/soft_penalty_comparison.png}
+        \caption{So sánh Soft Penalty giữa các seed.}
+        \label{fig:soft_penalty}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/convergence_speed.png}
+        \caption{Số thế hệ cần thiết để hội tụ.}
+        \label{fig:convergence_speed}
+    \end{minipage}
+    \caption{Phân tích hiệu suất thuật toán trên nhiều seed khác nhau.}
+    \label{fig:comparison}
+\end{figure}
+
+\subsection{Phân tích Ràng buộc}
+Với hard violations = 0 trên tất cả các seed, lịch xếp thỏa mãn:
+\begin{itemize}
+    \item Tất cả 30 offerings có 2 buổi cách nhau $\geq$ 2 ngày.
+    \item Không xung đột giảng viên (mỗi giảng viên dạy tối đa 1 lớp tại mỗi timeslot).
+    \item Không xung đột phòng (mỗi phòng chỉ có 1 lớp tại mỗi timeslot).
+    \item Dung tích phòng phù hợp (phòng lớn cho lớp lớn, phòng nhỏ cho lớp nhỏ).
+    \item Không có tiết học trùng lặp.
+    \item Phòng đều khả dụng.
+\end{itemize}
+
+\subsection{Kết luận từ Thực nghiệm}
+\begin{itemize}
+    \item Genetic Algorithm kết hợp heuristic seeding là phương pháp hiệu quả cho bài toán xếp lịch lớp học.
+    \item Repair function giúp đảm bảo chromosome luôn hợp lệ sau các toán tử di truyền.
+    \item Penalty-based fitness cho phép GA ưu tiên lịch hợp lệ trước, sau đó tối ưu chất lượng.
+    \item Kết quả 100\% feasible trên 5 seed chứng minh tính ổn định của thuật toán.
+\end{itemize}

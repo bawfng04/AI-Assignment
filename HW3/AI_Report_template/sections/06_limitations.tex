@@ -1,0 +1,32 @@
+% !TEX root = ../main.tex
+\section{Thách thức \& Hạn chế}
+
+Mặc dù giải pháp đưa ra hoạt động tốt, chúng tôi ghi nhận một số hạn chế cần cải tiến:
+
+\begin{itemize}
+    \item \textbf{Độ sâu tìm kiếm Alpha-Beta hạn chế:} Với độ sâu mặc định là 4 ply, Alpha-Beta không thể cân nhắc các kế hoạch dài hạn. Cờ vua là trò chơi với branch factor $\approx 35$ trung bình, dẫn đến số nút cần khám phá tăng theo $35^d$. Để đạt depth 6-8 (như các engine chuyên nghiệp), cần tối ưu hóa thêm (iterative deepening, better move ordering).
+
+    \item \textbf{Chất lượng Evaluation Function:} Hàm đánh giá hiện tại sử dụng piece-square tables cơ bản. Các engine hiện đại sử dụng neural networks được huấn luyện trên hàng triệu games để học các pattern cách tiến tế hơn. Mô hình tĩnh của chúng tôi bỏ qua các yếu tố như pawn structure weaknesses, piece coordination, king pawn endgame theory, v.v.
+
+    \item \textbf{MCTS Convergence Rate:} MCTS cần rất nhiều iterations để hội tụ đến quyết định tốt. Với 1500 iterations, nó còn yếu kém so với Alpha-Beta ở các vị trí tactical (chiến thuật). Thuật toán mất O(log n) phụ thuộc exploration, nhưng để thực sự cạnh tranh với engine mạnh, cần 10,000+ iterations.
+
+    \item \textbf{Thiếu Endgame Tables:} Tablebase (Endgame Database) chứa giải pháp tối ưu cho mọi position với $\leq N$ quân. Công nghệ này yêu cầu lưu trữ hành tỏ nhưng cho kết quả hoàn hảo. Hệ thống hiện tại không tích hợp Tablebases vì hạn chế không gian lưu trữ trong khung bài tập.
+
+    \item \textbf{GUI Responsiveness:} Khi AI suy nghĩ, giao diện Tkinter có thể không phản hồi vì processing chạy trên main thread. Để khắc phục, cần đưa AI calculation vào thread riêng biệt hoặc sử dụng async/await.
+
+    \item \textbf{Thiếu Opening Books:} Một engine chuyên nghiệp sử dụng opening books (cơ sở dữ liệu các opening tốt nhất đã được phân tích bởi con người và máy). Hệ thống hiện tại chơi từ cơ bản từ position ban đầu, có thể không tối ưu trong giai đoạn mở game.
+
+    \item \textbf{Tốc độ Tính toán:} Triển khai Python thuần túy không cạnh tranh với C++/Rust. Các công cụ mạnh thường viết bộ lõi (core engine) bằng C++ để tốc độ. Ước tính hệ thống hiện tại ngang ngửa với 1 ply tìm kiếm so với engine Stockfish ở tốc độ tương đương.
+\end{itemize}
+
+\subsection{Cơ hội Cải tiến Tương lai}
+\begin{itemize}
+    \item Tối ưu hóa hashtable với Zobrist hashing tốt hơn.
+    \item Thêm iterative deepening để sử dụng thời gian hiệu quả hơn.
+    \item Tích hợp neural networks cho evaluation (cần training data từ games mạnh).
+    \item Implement tuổi transposition table entries để tránh collision.
+    \item Sử dụng opening books từ Polyglot.
+    \item Parallel alpha-beta (parallel search trên multi-core).
+    \item Chuyển code time-critical sang C++ extension.
+\end{itemize}
+

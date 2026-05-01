@@ -1,0 +1,39 @@
+% !TEX root = ../main.tex
+\section{Giới thiệu}
+
+\subsection{Mục tiêu \& Yêu cầu}
+Xếp lịch lớp học (Class Scheduling / Timetabling) là một bài toán kinh điển trong lĩnh vực Tối ưu hóa và Trí tuệ Nhân tạo. Bài toán yêu cầu phân bổ các lớp học vào các khung thời gian, phòng học và giảng viên sao cho thỏa mãn tất cả các ràng buộc đồng thời tối thiểu hóa xung đột.
+
+Các mục tiêu chính của bài tập lớn này bao gồm:
+\begin{enumerate}
+    \item \textbf{Mô hình hóa bài toán:} Xây dựng mô hình dữ liệu biểu diễn môn học, giảng viên, phòng học, tiết học và các ràng buộc liên quan.
+    \item \textbf{Cài đặt Genetic Algorithm:} Triển khai thuật toán di truyền đầy đủ với mã hóa chromosome, các toán tử di truyền (selection, crossover, mutation), và hàm fitness đánh giá chất lượng lịch.
+    \item \textbf{Xử lý ràng buộc:} Thiết kế hệ thống ràng buộc cứng (hard constraints) và ràng buộc mềm (soft constraints) để đảm bảo lịch hợp lệ và tối ưu.
+    \item \textbf{Trực quan hóa:} Tạo biểu đồ fitness theo thế hệ và hiển thị lịch xếp chi tiết.
+\end{enumerate}
+
+\subsection{Động lực thực hiện}
+Bài toán xếp lịch lớp học có ý nghĩa thực tiễn cao trong quản lý giáo dục:
+\begin{itemize}
+    \item \textbf{Tính phức tạp:} Không gian tìm kiếm rất lớn. Bài toán thuộc lớp NP-hard, không thể giải tối ưu bằng phương pháp duyệt vét cạn.
+    \item \textbf{Nhiều ràng buộc:} Cần thỏa mãn đồng thời nhiều loại ràng buộc: xung đột giảng viên, dung tích phòng, ngày học hợp lệ, giới hạn số môn mỗi giảng viên.
+    \item \textbf{Ứng dụng GA:} Genetic Algorithm là phương pháp heuristic hiệu quả cho bài toán tối ưu tổ hợp, có khả năng tìm nghiệm gần tối ưu trong thời gian chấp nhận được.
+\end{itemize}
+
+\subsection{Phạm vi của dự án}
+\begin{itemize}
+    \item \textbf{Quy mô:} 15 môn học, 10 giảng viên, 10 tiết học, 30 phòng học (2 loại: nhỏ 0, lớn 1), 5 ngày (Thứ 2 -- Thứ 6), 6 khung giờ mỗi ngày.
+    \item \textbf{Ràng buộc cứng:} 6 loại ràng buộc (ngày hợp lệ, dung tích phòng, xung đột giảng viên, phòng trống, xung đột tiết, xung đột phòng) + giới hạn số môn mỗi giảng viên.
+    \item \textbf{Ràng buộc mềm:} Tối ưu phân bổ đều tải (slot variance), phân bổ đều phòng (room variance), giảm thời gian trống giữa các tiết.
+    \item \textbf{Đa seed:} Chạy trên nhiều seed khác nhau để đánh giá tính ổn định của thuật toán.
+\end{itemize}
+
+\subsection{Cấu trúc bài báo}
+\begin{itemize}
+    \item \textbf{Phần 2 (Các nghiên cứu liên quan):} Tổng quan các công trình về xếp lịch lớp học và Genetic Algorithm.
+    \item \textbf{Phần 3 (Cơ sở lý thuyết):} Cơ sở lý thuyết về Genetic Algorithm và bài toán timetabling.
+    \item \textbf{Phần 4 (Phương pháp đề xuất):} Thiết kế kiến trúc hệ thống, chi tiết cài đặt GA và các ràng buộc.
+    \item \textbf{Phần 5 (Kết quả và Phân tích):} Kết quả thực nghiệm, phân tích hiệu suất, trực quan hóa dữ liệu.
+    \item \textbf{Phần 6 (Hạn chế và Thách thức):} Những hạn chế và hướng cải tiến.
+    \item \textbf{Phần 7 (Kết luận và Hướng phát triển):} Tóm tắt đóng góp và kết luận.
+\end{itemize}
