@@ -1,5 +1,3 @@
 \babel@toc {vietnamese}{}\relax 
-\contentsline {table}{\numberline {2}{\ignorespaces Các tham số GA sử dụng trong thực nghiệm.}}{11}{table.caption.3}%
-\contentsline {table}{\numberline {3}{\ignorespaces Tổng hợp kết quả thực nghiệm trên 5 seed.}}{12}{table.caption.4}%
-\contentsline {table}{\numberline {4}{\ignorespaces Kết quả GA trên 5 seed khác nhau.}}{12}{table.caption.5}%
-\contentsline {table}{\numberline {5}{\ignorespaces Thống kê tổng hợp trên 5 seed.}}{13}{table.caption.6}%
+\contentsline {table}{\numberline {2}{\ignorespaces Tổng hợp kết quả hiệu suất trung bình trên 5 lần chạy thực nghiệm.}}{6}{table.caption.3}%
+\contentsline {table}{\numberline {3}{\ignorespaces Chi tiết kết quả thực nghiệm theo từng bộ giá trị ngẫu nhiên (seed).}}{6}{table.caption.4}%

@@ -1,37 +1,8 @@
 % !TEX root = ../main.tex
 \section{Kết luận và Hướng phát triển}
 
-\subsection{Kết luận}
-Dự án đã hoàn thành thành công việc xây dựng hệ thống xếp lịch lớp học sử dụng Genetic Algorithm:
+Dự án nghiên cứu đã thực hiện thành công việc ứng dụng thuật toán di truyền vào bài toán tối ưu hóa xếp lịch lớp học, giải quyết hiệu quả các thách thức về phân bổ tài nguyên trong môi trường đại học. Thông qua quá trình mô hình hóa và thực nghiệm, hệ thống đã chứng minh được khả năng tạo ra các lịch học hợp lệ, thỏa mãn tuyệt đối các ràng buộc cứng về thời gian và không gian. Việc tích hợp các kỹ thuật tiên tiến như khởi tạo bằng heuristic và cơ chế sửa lỗi đa tầng không chỉ giúp nâng cao chất lượng nghiệm mà còn đảm bảo tốc độ hội tụ ổn định, đáp ứng được các yêu cầu về tính thực tiễn và hiệu quả tính toán.
 
-\begin{itemize}
-    \item \textbf{Mô hình hóa bài toán:} Xây dựng mô hình dữ liệu đầy đủ với 15 môn học, 10 giảng viên, 30 phòng học, 5 ngày, 6 khung giờ. Mỗi môn có 2 buổi cách nhau ít nhất 2 ngày.
+Kết quả thực nghiệm trên nhiều kịch bản dữ liệu khác nhau khẳng định rằng cách tiếp cận dựa trên tiến hóa là một hướng đi đúng đắn cho các bài toán tối ưu tổ hợp có độ phức tạp cao. Sự kết hợp giữa các toán tử di truyền truyền thống và các tri thức đặc thù của bài toán đã tạo nên một bộ máy tìm kiếm mạnh mẽ, có khả năng cân bằng tốt giữa việc thăm dò không gian mới và khai thác các vùng nghiệm tiềm năng. Bên cạnh đó, việc xây dựng giao diện tương tác và các công cụ trực quan hóa cũng góp phần quan trọng trong việc giúp người dùng cuối hiểu rõ và kiểm soát quá trình tiến hóa của hệ thống.
 
-    \item \textbf{Cài đặt GA hoàn chỉnh:} Triển khai đầy đủ các thành phần: chromosome encoding, tournament selection, uniform crossover, mutation (4 loại), elitism, repair function.
-
-    \item \textbf{Xử lý ràng buộc:} 7 loại hard constraints và 3 loại soft penalty, ưu tiên lịch hợp lệ trước khi tối ưu chất lượng.
-
-    \item \textbf{Heuristic seeding:} 70\% quần thể ban đầu được tạo bằng heuristic greedy, giúp GA hội tụ nhanh đến nghiệm hợp lệ.
-
-    \item \textbf{Kết quả 100\% feasible:} Tất cả 5 seed đều cho lịch hợp lệ, chứng minh tính ổn định và hiệu quả của thuật toán.
-
-    \item \textbf{Giao diện Streamlit:} Cho phép tùy chỉnh tham số, chạy GA, trực quan hóa kết quả và xuất báo cáo.
-
-    \item \textbf{Kiến trúc modular:} Mã nguồn được tổ chức rõ ràng, dễ bảo trì và mở rộng.
-\end{itemize}
-
-\subsection{Đóng góp Chính}
-\begin{itemize}
-    \item Chứng minh GA kết hợp heuristic seeding là phương pháp hiệu quả cho bài toán xếp lịch lớp học với nhiều ràng buộc.
-    \item Thiết kế hàm fitness kết hợp hard penalty và soft penalty, đảm bảo ưu tiên lịch hợp lệ.
-    \item Cung cấp hệ thống đầy đủ từ sinh dữ liệu, giải bài toán, đến trực quan hóa kết quả.
-\end{itemize}
-
-\subsection{Hướng phát triển tương lai}
-\begin{itemize}
-    \item Tích hợp thêm ràng buộc thực tế (giảng viên bận, sinh viên đăng ký, trang thiết bị phòng).
-    \item So sánh với các phương pháp metaheuristic khác (Simulated Annealing, Tabu Search).
-    \item Áp dụng multi-objective optimization (NSGA-II) cho nhiều mục tiêu cùng lúc.
-    \item Sử dụng dữ liệu xếp lịch thực tế để đánh giá hiệu quả thực tiễn.
-    \item Triển khai adaptive GA với tham số tự điều chỉnh.
-\end{itemize}
+Trong tương lai, hướng nghiên cứu sẽ tập trung vào việc nâng cao khả năng mở rộng của hệ thống để đáp ứng các quy mô đào tạo lớn hơn. Chúng tôi dự kiến sẽ tích hợp thêm các phương pháp metaheuristic lai và cơ chế điều chỉnh tham số thích nghi để tối ưu hóa sâu hơn các ràng buộc mềm, đồng thời mở rộng mô hình dữ liệu để bao hàm các yêu cầu thực tế đa dạng hơn từ phía giảng viên và sinh viên. Những cải tiến này hướng tới mục tiêu xây dựng một giải pháp xếp lịch tự động toàn diện, góp phần hiện đại hóa và nâng cao hiệu quả quản lý trong môi trường giáo dục đại học.

@@ -1,72 +1,10 @@
 % !TEX root = ../main.tex
 \section{Cơ sở lý thuyết}
 
-\subsection{Genetic Algorithm (GA)}
-Genetic Algorithm là một phương pháp tối ưu hóa lấy cảm hứng từ quá trình tiến hóa tự nhiên. GA hoạt động trên một quần thể (population) các cá thể (chromosome), mỗi cá thể biểu diễn một nghiệm tiềm năng.
+Thuật toán Di truyền (Genetic Algorithm - GA) là một phương pháp tối ưu hóa ngẫu nhiên được lấy cảm hứng từ quy luật tiến hóa và di truyền trong tự nhiên. Quy trình cốt lõi của GA dựa trên việc duy trì và biến đổi một quần thể các cá thể, trong đó mỗi cá thể đại diện cho một nghiệm tiềm năng của bài toán. Quá trình tiến hóa bắt đầu bằng việc khởi tạo quần thể, sau đó trải qua các vòng lặp đánh giá độ thích nghi (fitness), chọn lọc các cá thể ưu tú, và áp dụng các toán tử lai ghép (crossover) cũng như đột biến (mutation) để sinh ra thế hệ kế tiếp với chất lượng ngày càng cải thiện.
 
-\textbf{Các bước cơ bản của GA:}
-\begin{enumerate}
-    \item \textbf{Khởi tạo (Initialization):} Tạo quần thể ban đầu ngẫu nhiên (hoặc dùng heuristic).
-    \item \textbf{Đánh giá (Evaluation):} Tính toán độ thích nghi (fitness) của mỗi cá thể.
-    \item \textbf{Chọn lọc (Selection):} Chọn các cá thể tốt để duy trì nòi giống (tournament selection, roulette wheel, v.v.).
-    \item \textbf{Lai ghép (Crossover):} Kết hợp thông tin từ hai cá thể cha mẹ để tạo ra thế hệ con.
-    \item \textbf{Đột biến (Mutation):} Thay đổi ngẫu nhiên một phần của cá thể để duy trì tính đa dạng di truyền.
-    \item \textbf{Thay thế (Replacement):} Tạo quần thể mới từ các cá thể con kết hợp với chiến lược bảo tồn (elitism).
-    \item Lặp lại bước 2--6 cho đến khi hội tụ hoặc đạt số thế hệ tối đa.
-\end{enumerate}
+Trong bài toán xếp lịch, việc mã hóa các cá thể đóng vai trò quyết định đến hiệu quả của quá trình tìm kiếm. Chúng tôi áp dụng phương pháp mã hóa trực tiếp (direct encoding), trong đó mỗi gene lưu trữ đầy đủ thông tin về một lớp học phần bao gồm ngày học, khung giờ và định danh phòng học. Cấu trúc này cho phép các toán tử di truyền tác động trực tiếp lên các thuộc tính vật lý của lịch học, giúp duy trì tính nhất quán và dễ dàng kiểm soát các ràng buộc giữa các buổi học trong cùng một môn học.
 
-\subsection{Biểu diễn Chromosome cho Timetabling}
-Mỗi chromosome biểu diễn một lịch xếp hoàn chỉnh. Trong dự án này, chromosome gồm 30 gene (tương ứng 30 offerings). Mỗi gene (OfferingGene) chứa 2 session:
-\begin{itemize}
-    \item \texttt{SessionAssignment(day, timeslot, room\_id)} -- buổi học thứ nhất.
-    \item \texttt{SessionAssignment(day, timeslot, room\_id)} -- buổi học thứ hai.
-\end{itemize}
+Hàm thích nghi (fitness function) được thiết kế nhằm phản ánh mức độ hoàn thiện của lịch học thông qua việc tổng hợp các hình phạt từ các vi phạm ràng buộc. Các ràng buộc trong hệ thống được phân cấp rõ rệt thành ràng buộc cứng và ràng buộc mềm. Ràng buộc cứng bao gồm các điều kiện bắt buộc phải thỏa mãn như tính khả dụng của phòng học, sự phù hợp về dung tích và việc tránh xung đột thời gian giữa các giảng viên hoặc phòng học. Ngược lại, các ràng buộc mềm hướng tới việc nâng cao chất lượng lịch học bằng cách tối ưu hóa sự phân bổ đều đặn các lớp học xuyên suốt tuần và giảm thiểu các khoảng thời gian trống giữa các tiết học của cùng một lớp.
 
-Ngày hợp lệ: Hai buổi học phải cách nhau ít nhất 2 ngày (ví dụ: Thứ 2 -- Thứ 4, Thứ 3 -- Thứ 6).
-
-\subsection{Hàm Fitness}
-Hàm fitness đánh giá chất lượng của một chromosome. Thiết kế kết hợp phạt cứng và phạt mềm:
-
-\begin{equation*}
-\text{fitness} = \frac{1}{1 + W_h \cdot H + W_s \cdot S}
-\end{equation*}
-
-trong đó:
-\begin{itemize}
-    \item $H$ = tổng số vi phạm ràng buộc cứng (hard violations).
-    \item $S$ = tổng phạt mềm (soft penalty).
-    \item $W_h = 1000$ = trọng số phạt cứng (ưu tiên lịch hợp lệ).
-    \item $W_s = 1$ = trọng số phạt mềm.
-\end{itemize}
-
-\textbf{Ràng buộc cứng (Hard Constraints):}
-\begin{enumerate}
-    \item \textbf{Invalid session pairs:} Hai buổi học không cách nhau ít nhất 2 ngày.
-    \item \textbf{Room capacity mismatch:} Phòng nhỏ (size 0) cho lớp lớn (size 1).
-    \item \textbf{Professor conflict:} Giảng viên dạy 2 lớp cùng lúc.
-    \item \textbf{Room unavailable:} Phòng không khả dụng.
-    \item \textbf{Section conflict:} Một tiết học ở 2 phòng cùng lúc.
-    \item \textbf{Room conflict:} Phòng được giao cho 2 lớp cùng lúc.
-    \item \textbf{Professor course overload:} Giảng viên dạy quá 3 môn.
-\end{enumerate}
-
-\textbf{Ràng buộc mềm (Soft Penalty):}
-\begin{itemize}
-    \item \textbf{Slot load variance:} Phân bổ đều số lớp vào các khung giờ.
-    \item \textbf{Room load variance:} Phân bổ đều số lớp vào các phòng.
-    \item \textbf{Idle gap penalty:} Phạt thời gian trống giữa các tiết trong cùng ngày.
-\end{itemize}
-
-\subsection{Tournament Selection}
-Tournament selection chọn $k$ cá thể ngẫu nhiên từ quần thể, lấy cá thể có fitness tốt nhất. Phương pháp này:
-\begin{itemize}
-    \item Điều chỉnh áp lực chọn lọc qua tham số $k$ (tournament size).
-    \item Không yêu cầu fitness toàn cục (không cần tính tổng fitness).
-    \item Phù hợp với fitness có thể âm hoặc penalty-based.
-\end{itemize}
-
-\subsection{Uniform Crossover}
-Uniform crossover duyệt qua từng gene, ngẫu nhiên chọn gene từ cha A hoặc cha B với xác suất 50/50. Phương pháp này phù hợp vì mỗi gene (offering) độc lập về mặt cấu trúc.
-
-\subsection{Elitism}
-Elitism giữ lại $n$ cá thể tốt nhất từ thế hệ trước sang thế hệ mới. Điều này đảm bảo fitness tốt nhất không bao giờ giảm qua các thế hệ.
+Công thức tính độ thích nghi thường được biểu diễn dưới dạng nghịch đảo của tổng phạt trọng số, trong đó các vi phạm ràng buộc cứng được gán các hệ số phạt rất lớn để đảm bảo thuật toán ưu tiên tìm kiếm các lịch học hợp lệ trước khi tối ưu hóa các yếu tố chất lượng. Thông qua cơ chế chọn lọc, các cá thể có độ thích nghi cao sẽ có xác suất lớn hơn được giữ lại và truyền lại các đặc tính tốt cho thế hệ sau. Chiến lược bảo tồn cá thể ưu tú (elitism) cũng được tích hợp để đảm bảo rằng nghiệm tốt nhất tìm được qua các thế hệ luôn được duy trì, giúp thuật toán hội tụ một cách ổn định về phía nghiệm tối ưu toàn cục.
