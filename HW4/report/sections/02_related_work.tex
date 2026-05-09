@@ -1,0 +1,40 @@
+% !TEX root = ../main.tex
+\section{Các nghiên cứu liên quan}
+
+\subsection{Bài toán Timetabling}
+Bài toán xếp lịch (timetabling) là một trong những bài toán tối ưu tổ hợp được nghiên cứu rộng rãi nhất. Các biến thể bao gồm: university course timetabling, exam timetabling, school timetabling, và workforce scheduling.
+
+\textbf{Các phương pháp giải:}
+\begin{itemize}
+    \item \textbf{Exact methods:} Integer Programming, Branch and Bound -- cho nghiệm tối ưu nhưng thời gian chạy tăng theo hàm mũ với quy mô bài toán.
+    \item \textbf{Metaheuristics:} Genetic Algorithm, Simulated Annealing, Tabu Search, Ant Colony Optimization -- cho nghiệm gần tối ưu trong thời gian hợp lý.
+    \item \textbf{Hybrid methods:} Kết hợp nhiều phương pháp, ví dụ GA với local search (memetic algorithm).
+\end{itemize}
+
+\subsection{Genetic Algorithm cho Timetabling}
+Genetic Algorithm (GA) được giới thiệu bởi John Holland vào năm 1975 và đã được áp dụng rộng rãi cho bài toán timetabling.
+
+\textbf{Các công trình nổi bật:}
+\begin{itemize}
+    \item \textbf{Colorni et al. (1992):} Một trong những ứng dụng đầu tiên của GA cho bài toán xếp lịch đại học, sử dụng mã hóa dựa trên hoán vị.
+    \item \textbf{Burke et al. (1996):} Đề xuất phương pháp hybrid GA kết hợp với local search cho exam timetabling.
+    \item \textbf{Pillay \& Banzhaf (2008):} Nghiên cứu so sánh các phương pháp GA khác nhau cho timetabling, nhấn mạnh tầm quan trọng của representation và operators.
+\end{itemize}
+
+\subsection{Mã hóa Chromosome}
+Cách biểu diễn chromosome ảnh hưởng lớn đến hiệu quả GA:
+\begin{itemize}
+    \item \textbf{Mã hóa nhị phân (Binary encoding):} Dễ triển khai nhưng không tự nhiên cho bài toán xếp lịch.
+    \item \textbf{Mã hóa hoán vị (Permutation encoding):} Phổ biến cho xếp lịch thi cử, mỗi gene là một khung giờ.
+    \item \textbf{Mã hóa trực tiếp (Direct encoding):} Mỗi gene chứa đầy đủ thông tin (ngày, tiết, phòng) -- được sử dụng trong dự án này.
+\end{itemize}
+
+\subsection{Xử lý Ràng buộc trong GA}
+Có nhiều chiến lược xử lý ràng buộc trong GA:
+\begin{itemize}
+    \item \textbf{Hàm phạt (Penalty function):} Phạt các cá thể vi phạm ràng buộc (được sử dụng trong dự án này).
+    \item \textbf{Hàm sửa lỗi (Repair function):} Sửa chữa cá thể vi phạm sau quá trình lai ghép/đột biến.
+    \item \textbf{Bộ giải mã (Decoder-based):} Mã hóa đảm bảo chỉ sinh ra các cá thể hợp lệ.
+\end{itemize}
+
+Dự án này kết hợp cả penalty function và repair function để cân bằng giữa exploration và feasibility.
