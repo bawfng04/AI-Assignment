@@ -1,0 +1,58 @@
+# ==============================================================================
+# HW4 — Dueling Double DQN (D3QN) — Default Hyperparameters
+# ==============================================================================
+# Reference: "Dueling Network Architectures for Deep Reinforcement Learning"
+#            (Wang et al., 2016) & "Deep RL with Double Q-learning"
+#            (van Hasselt et al., 2016)
+# ==============================================================================
+
+# --- Environment ---
+env:
+  name: "PongNoFrameskip-v4"       # Atari environment ID
+  frame_stack: 4                    # Number of frames to stack (DeepMind default)
+  frame_skip: 4                     # Max-pool over last N frames
+  screen_size: 84                   # Resize frames to 84x84 (DeepMind default)
+  noop_max: 30                      # Maximum number of no-op actions at start
+  clip_rewards: true                # Clip rewards to {-1, 0, +1}
+  episodic_life: true               # Treat loss of life as episode end during training
+
+# --- Agent ---
+agent:
+  gamma: 0.99                       # Discount factor γ
+  learning_rate: 1.0e-4             # Adam learning rate (DeepMind standard)
+  batch_size: 32                    # Mini-batch size
+  target_update_freq: 10000         # Hard target update frequency (steps)
+  tau: 1.0                          # Soft update coefficient (1.0 = hard update)
+  grad_clip: 10.0                   # Gradient clipping max norm
+
+# --- Exploration (ε-greedy) ---
+epsilon:
+  start: 1.0                        # Initial exploration rate
+  end: 0.01                          # Final exploration rate
+  decay_steps: 100000                # Steps over which ε decays linearly
+
+# --- Replay Buffer (Prioritized Experience Replay) ---
+buffer:
+  capacity: 100000                   # Maximum buffer size
+  alpha: 0.6                        # PER priority exponent (0 = uniform, 1 = full prioritization)
+  beta_start: 0.4                   # Initial importance-sampling exponent
+  beta_end: 1.0                     # Final importance-sampling exponent (annealed to 1.0)
+  beta_anneal_steps: 100000         # Steps over which β is annealed
+  epsilon: 1.0e-6                   # Small constant to prevent zero priority
+
+# --- Training ---
+training:
+  total_timesteps: 1000000           # Total training steps
+  learning_starts: 10000             # Steps before learning begins (fill buffer)
+  train_freq: 4                      # Train every N environment steps
+  log_interval: 100                  # Log metrics every N episodes
+  save_interval: 50000               # Save checkpoint every N steps
+  eval_episodes: 10                  # Episodes for periodic evaluation
+
+# --- Reproducibility ---
+seed: 42
+
+# --- Paths ---
+paths:
+  checkpoint_dir: "checkpoints"
+  log_dir: "runs"

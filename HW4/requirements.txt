@@ -1,0 +1,29 @@
+# ==============================================================================
+# HW4 — Dueling Double DQN (D3QN) for Atari Games
+# ==============================================================================
+
+# Core
+torch>=2.0.0
+numpy>=1.24.0
+
+# Environment
+gymnasium[atari]>=0.29.0
+gymnasium[accept-rom-license]>=0.29.0
+ale-py>=0.8.1
+shimmy>=1.0.0
+
+# Image processing
+opencv-python>=4.8.0
+
+# Experiment tracking
+tensorboard>=2.14.0
+
+# Configuration
+pyyaml>=6.0
+
+# Evaluation & Recording
+imageio>=2.31.0
+imageio-ffmpeg>=0.4.9
+
+# Utilities
+tqdm>=4.66.0
