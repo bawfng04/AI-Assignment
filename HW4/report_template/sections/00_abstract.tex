@@ -1,0 +1,7 @@
+% !TEX root = ../main.tex
+\section*{Tóm tắt}
+\addcontentsline{toc}{section}{Tóm tắt}
+
+Trong bài báo cáo này, chúng tôi trình bày việc thiết kế và cài đặt một hệ thống Học tăng cường sâu (Deep Reinforcement Learning) mạnh mẽ để giải quyết các môi trường giả lập Atari phức tạp. Thay vì sử dụng thuật toán Deep Q-Network (DQN) truyền thống vốn thường gặp phải vấn đề đánh giá quá mức (overestimation bias), chúng tôi đề xuất triển khai mô hình Dueling Double DQN (D3QN) kết hợp với kỹ thuật Cấp phát ưu tiên bộ nhớ (Prioritized Experience Replay - PER). 
+
+Mô hình D3QN sử dụng kiến trúc Dueling để phân tách việc tính toán giá trị trạng thái (State Value) và lợi thế của hành động (Action Advantage), đồng thời áp dụng cơ chế Double DQN nhằm ổn định quá trình học. Việc tích hợp cấu trúc dữ liệu SumTree cho cơ chế PER giúp agent học hỏi hiệu quả hơn từ những trải nghiệm có sai số dự đoán (TD-Error) cao, từ đó tăng tốc độ hội tụ. Các kết quả thực nghiệm trên môi trường Pong (ALE/Pong-v5) cho thấy mô hình vượt qua điểm cơ sở một cách rõ rệt, chứng minh tính hiệu quả và sự ưu việt của kiến trúc đề xuất.

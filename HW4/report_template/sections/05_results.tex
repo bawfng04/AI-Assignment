@@ -1,0 +1,32 @@
+% !TEX root = ../main.tex
+\section{Kết quả thực nghiệm}
+
+\subsection{Môi trường và Cài đặt tham số}
+Các thử nghiệm được thực hiện trên môi trường \texttt{ALE/Pong-v5} sử dụng thư viện Gymnasium. Mô hình được huấn luyện trên hệ thống máy chủ cung cấp bộ xử lý GPU NVIDIA H100 để tăng tốc quá trình tối ưu hóa với PyTorch.
+Các tham số siêu việt (Hyperparameters) chính bao gồm: Learning rate $1 \times 10^{-4}$, hệ số chiết khấu $\gamma = 0.99$, kích thước Buffer $10^5$, Batch size 32, và Epsilon giảm dần từ 1.0 xuống 0.01.
+
+\subsection{Phân tích độ hội tụ (Training Curves)}
+Kết quả huấn luyện được minh họa qua hệ thống log thu thập trong quá trình đào tạo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../training_curves.png}
+    \caption{Biểu đồ tiến trình huấn luyện của D3QN trên môi trường Pong}
+    \label{fig:training_curves}
+\end{figure}
+
+Từ Hình \ref{fig:training_curves}, ta có thể phân tích:
+\begin{itemize}
+    \item \textbf{Biểu đồ Reward:} Ở những episodes đầu, agent hoàn toàn thực hiện các hành động ngẫu nhiên (Exploration) nên điểm số (Reward) luôn nằm ở mức -21 (thua tuyệt đối). Sau một thời gian khám phá, Reward bắt đầu tăng trưởng ổn định, thể hiện agent đã học được cách chặn bóng và phản công ghi điểm.
+    \item \textbf{Biểu đồ Huber Loss:} Quá trình Loss giữ ở mức độ ổn định nhờ việc áp dụng hàm Huber, giúp ngăn chặn hiện tượng bùng nổ gradient khi TD-Error lớn đột biến.
+    \item \textbf{Biểu đồ Epsilon:} Tỉ lệ khám phá giảm tịnh tiến tuyến tính theo đúng logic của lịch trình $\epsilon$-greedy, chuyển agent từ chế độ Khám phá (Exploration) sang Khai thác (Exploitation).
+\end{itemize}
+
+\subsection{Mô phỏng thực tế (Evaluation)}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../pipeline.png}
+    \caption{Sơ đồ kiến trúc luồng dữ liệu (Pipeline) của hệ thống đã triển khai}
+    \label{fig:pipeline}
+\end{figure}
+Kết quả trực quan từ các script \texttt{eval.py} cũng cho thấy agent có khả năng làm chủ các góc nảy khó của bóng, đưa ra quyết định kịp thời mà không bị ngập ngừng ở các trạng thái tương tự. Các trải nghiệm từ Prioritized Experience Replay đã phát huy tác dụng rõ rệt trong việc giúp mô hình "thuộc bài" và cải thiện điểm yếu nhanh chóng.

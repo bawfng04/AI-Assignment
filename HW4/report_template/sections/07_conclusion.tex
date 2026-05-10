@@ -1,0 +1,6 @@
+% !TEX root = ../main.tex
+\section{Kết luận}
+
+Dự án đã thực hiện thành công việc thiết kế và cài đặt hệ thống Học tăng cường Dueling Double DQN (D3QN) tích hợp Prioritized Experience Replay để giải quyết các môi trường Atari phức tạp. Thông qua việc phân rã kiến trúc mạng thành hai luồng Giá trị (Value) và Lợi thế (Advantage), cùng sự ổn định từ kỹ thuật Double DQN và cấu trúc SumTree tối ưu hóa cho PER, agent đã chứng tỏ năng lực học hỏi mạnh mẽ và khắc phục thành công yếu điểm Overestimation của DQN nguyên thủy.
+
+Kiến trúc mã nguồn được tuân thủ nghiêm ngặt theo các tiêu chuẩn Clean Architecture của kỹ nghệ phần mềm. Hệ thống cung cấp khả năng cấu hình linh hoạt (YAML) cùng các script giám sát, trích xuất biểu đồ tự động, dễ dàng mở rộng sang các biến thể thuật toán khác trong tương lai. Hướng phát triển tiềm năng là tích hợp kiến trúc Noisy Networks để khám phá thông minh hơn hoặc phân phối việc thu thập kinh nghiệm qua Ape-X để huấn luyện phân tán đa luồng.

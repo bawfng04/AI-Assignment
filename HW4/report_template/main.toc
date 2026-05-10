@@ -1,0 +1,19 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {section}{Tóm tắt}{B}{table.1}%
+\contentsline {section}{\numberline {1}Giới thiệu}{1}{section.1}%
+\contentsline {section}{\numberline {2}Các nghiên cứu liên quan}{1}{section.2}%
+\contentsline {section}{\numberline {3}Cơ sở lý thuyết}{2}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Quá trình quyết định Markov (MDP)}{2}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Deep Q-Network (DQN)}{2}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Huber Loss}{3}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Phương pháp đề xuất}{3}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Kiến trúc Dueling Double DQN (D3QN)}{3}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Prioritized Experience Replay (PER)}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Xử lý hình ảnh Atari (Preprocessing)}{4}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Kết quả thực nghiệm}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Môi trường và Cài đặt tham số}{4}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Phân tích độ hội tụ (Training Curves)}{4}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Mô phỏng thực tế (Evaluation)}{6}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Hạn chế và Thách thức}{6}{section.6}%
+\contentsline {section}{\numberline {7}Kết luận}{7}{section.7}%
+\contentsline {section}{\numberline {8}Tài liệu tham khảo}{9}{section.8}%

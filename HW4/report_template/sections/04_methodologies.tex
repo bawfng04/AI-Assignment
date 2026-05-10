@@ -1,0 +1,36 @@
+% !TEX root = ../main.tex
+\section{Phương pháp đề xuất}
+
+\subsection{Kiến trúc Dueling Double DQN (D3QN)}
+Để giải quyết bài toán Overestimation, chúng tôi áp dụng nguyên lý Double DQN. TD-Target được định nghĩa lại như sau:
+\begin{equation}
+    Y^{DDQN} = R_{t+1} + \gamma Q(S_{t+1}, \arg\max_{a} Q(S_{t+1}, a; \theta_{online}); \theta_{target})
+\end{equation}
+Mạng Online sẽ tìm ra hành động tốt nhất $a'$, sau đó Mạng Target sẽ đánh giá xem hành động $a'$ đó mang lại giá trị Q là bao nhiêu.
+
+Về mặt kiến trúc mạng neural, chúng tôi sử dụng mô hình Dueling. Sau khi qua các lớp Tích chập (CNN) để trích xuất đặc trưng hình ảnh từ Atari frames, đầu ra được chia làm hai nhánh:
+1. \textbf{Value Stream}: Ước lượng giá trị của trạng thái $V(s; \theta, \alpha)$.
+2. \textbf{Advantage Stream}: Ước lượng lợi thế của từng hành động $A(s, a; \theta, \beta)$.
+
+Giá trị Q tổng hợp được tính theo công thức:
+\begin{equation}
+    Q(s, a; \theta, \alpha, \beta) = V(s; \theta, \alpha) + \left( A(s, a; \theta, \beta) - \frac{1}{|\mathcal{A}|} \sum_{a'} A(s, a'; \theta, \beta) \right)
+\end{equation}
+Việc trừ đi giá trị trung bình giúp đảm bảo sự ổn định trong quá trình tối ưu hóa và xác định tính duy nhất (identifiability) cho $V$ và $A$.
+
+\subsection{Prioritized Experience Replay (PER)}
+Thay vì lưu trữ danh sách tuần tự thông thường, chúng tôi sử dụng cấu trúc cây \textbf{SumTree} để lưu độ ưu tiên $p_i$ cho từng trải nghiệm $i$. Độ ưu tiên được định nghĩa dựa trên sai số TD:
+\begin{equation}
+    p_i = |\delta_i| + \epsilon
+\end{equation}
+Xác suất để một trải nghiệm được lấy mẫu là $P(i) = \frac{p_i^\alpha}{\sum_k p_k^\alpha}$. Việc lấy mẫu từ cây SumTree đạt độ phức tạp $O(\log N)$, tối ưu hóa đáng kể về mặt hiệu năng trên các Buffer chứa hàng triệu samples.
+Để tránh bias, chúng tôi áp dụng hệ số Importance Sampling (IS) để điều chỉnh Gradient:
+\begin{equation}
+    w_i = \left( \frac{1}{N} \cdot \frac{1}{P(i)} \right)^\beta
+\end{equation}
+
+\subsection{Xử lý hình ảnh Atari (Preprocessing)}
+Mỗi khung hình từ môi trường Atari được xử lý qua pipeline chuẩn của DeepMind:
+- Chuyển thành ảnh xám (Grayscale).
+- Cắt và thu nhỏ (Resize) về kích thước $84 \times 84$.
+- Xếp chồng 4 khung hình liên tiếp (Frame Stacking) để cung cấp cho agent thông tin về vận tốc và phương hướng của các vật thể chuyển động.

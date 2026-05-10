@@ -1,0 +1,10 @@
+% !TEX root = ../main.tex
+\section{Các nghiên cứu liên quan}
+
+Sự thành công của DRL trên các môi trường Atari bắt đầu từ công trình của Mnih et al. (2015), khi họ đề xuất sử dụng mạng tích chập (CNN) kết hợp với Q-Learning và Experience Replay để xử lý không gian trạng thái phức tạp. Mô hình này (DQN) đánh dấu kỷ nguyên mới của AI trong việc tự động trích xuất đặc trưng từ hình ảnh thô.
+
+Sau đó, Van Hasselt et al. (2015) đã chứng minh rằng DQN thường xuyên đánh giá quá cao các giá trị Q do việc sử dụng cùng một hàm mạng cho cả việc chọn và đánh giá hành động. Họ đã đề xuất thuật toán Double DQN, tách biệt việc chọn hành động bằng Mạng Online và đánh giá bằng Mạng Target.
+
+Đến năm 2015, Wang et al. giới thiệu Dueling Network Architecture, trong đó mạng neural ở các lớp cuối được rẽ làm hai nhánh riêng biệt: một để tính Giá trị trạng thái $V(s)$ và một tính Lợi thế hành động $A(s, a)$. Kiến trúc này đặc biệt hiệu quả trong các game có nhiều trạng thái mà mọi hành động đều không ảnh hưởng đến giá trị cuối cùng.
+
+Cùng thời điểm, Schaul et al. (2015) đề xuất Prioritized Experience Replay (PER). Thay vì lấy mẫu ngẫu nhiên đồng đều các trải nghiệm từ bộ nhớ, PER ưu tiên lấy mẫu các trải nghiệm có độ lỗi TD-Error lớn nhất, vì đây là những trạng thái mà agent "bất ngờ" nhất và cần học hỏi nhiều nhất. Sự kết hợp của Dueling, Double và PER tạo nên một nền tảng vững chắc (D3QN) mà chúng tôi sẽ triển khai trong dự án này.

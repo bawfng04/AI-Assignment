@@ -1,0 +1,22 @@
+% !TEX root = ../main.tex
+\section{Cơ sở lý thuyết}
+
+\subsection{Quá trình quyết định Markov (MDP)}
+Bài toán Học tăng cường được mô hình hóa dưới dạng một Quá trình quyết định Markov, bao gồm một tập các trạng thái $\mathcal{S}$, tập hành động $\mathcal{A}$, xác suất chuyển trạng thái $\mathcal{P}$, hàm phần thưởng $\mathcal{R}$ và hệ số chiết khấu $\gamma \in [0, 1]$. Ở mỗi bước thời gian $t$, agent quan sát trạng thái $s_t$, thực hiện hành động $a_t$, nhận phần thưởng $r_{t+1}$ và chuyển sang trạng thái mới $s_{t+1}$.
+
+\subsection{Deep Q-Network (DQN)}
+DQN sử dụng một mạng neural (thường là CNN) có trọng số $\theta$ để xấp xỉ hàm Q-value tối ưu: $Q^*(s, a) \approx Q(s, a; \theta)$. Mạng được huấn luyện bằng cách giảm thiểu sai số bình phương giữa giá trị Q dự đoán và giá trị mục tiêu (TD-target):
+\begin{equation}
+    L(\theta) = \mathbb{E}_{(s, a, r, s') \sim U(D)} \left[ \left( r + \gamma \max_{a'} Q(s', a'; \theta^-) - Q(s, a; \theta) \right)^2 \right]
+\end{equation}
+Trong đó $D$ là Replay Buffer, và $\theta^-$ là trọng số của Mạng Target được đóng băng và cập nhật định kỳ từ $\theta$.
+
+\subsection{Huber Loss}
+Thay vì sử dụng Mean Squared Error (MSE), DQN thường sử dụng Huber Loss để tránh việc gradients bùng nổ khi TD-Error quá lớn:
+\begin{equation}
+    \mathcal{L}_{Huber}(x) = 
+    \begin{cases} 
+      \frac{1}{2}x^2 & \text{nếu } |x| \leq 1 \\
+      |x| - \frac{1}{2} & \text{nếu } |x| > 1
+    \end{cases}
+\end{equation}

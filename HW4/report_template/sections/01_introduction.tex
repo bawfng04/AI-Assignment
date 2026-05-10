@@ -1,0 +1,8 @@
+% !TEX root = ../main.tex
+\section{Giới thiệu}
+
+Học tăng cường sâu (Deep Reinforcement Learning - DRL) đã đạt được những bước tiến mang tính bước ngoặt kể từ khi DeepMind giới thiệu mô hình Deep Q-Network (DQN), lần đầu tiên chứng minh trí tuệ nhân tạo có thể học cách chơi các tựa game Atari trực tiếp từ điểm ảnh (pixels) với hiệu suất vượt qua con người. Tuy nhiên, thuật toán DQN gốc vẫn còn tồn tại một số điểm yếu cốt lõi, nổi bật nhất là hiện tượng đánh giá quá mức (Overestimation Bias) của hàm Q-value, dẫn đến các chính sách (policies) dưới mức tối ưu và làm mất tính ổn định trong quá trình huấn luyện dài hạn.
+
+Nhằm giải quyết bài toán này, dự án tập trung phát triển một agent mạnh mẽ dựa trên việc kết hợp các cải tiến hiện đại nhất của DRL, cụ thể là thuật toán Dueling Double DQN (D3QN) kết hợp cùng Prioritized Experience Replay (PER). Bằng cách tách biệt ước lượng giá trị của trạng thái hiện tại (Value stream) khỏi lợi thế của từng hành động cụ thể (Advantage stream), mạng Dueling cải thiện khả năng tổng quát hóa trên các trạng thái mà hành động không mang tính quyết định. Cùng lúc đó, Double DQN sử dụng hai bộ trọng số mạng neural tách biệt để giải quyết hiện tượng Overestimation Bias.
+
+Phạm vi của nghiên cứu này là cài đặt và huấn luyện hệ thống trên môi trường Atari (ví dụ: Pong, Breakout) thông qua thư viện Gymnasium. Hệ thống được xây dựng tuân thủ nghiêm ngặt các tiêu chuẩn cấu trúc phần mềm (Clean Architecture), tách biệt giữa logic Agent, Network, Replay Buffer và Môi trường. Báo cáo này sẽ trình bày chi tiết về cơ sở lý thuyết, kiến trúc mạng, quá trình tinh chỉnh siêu tham số và đánh giá các kết quả thực nghiệm thu được.
