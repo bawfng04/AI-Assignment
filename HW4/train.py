@@ -183,7 +183,8 @@ def train(config: Dict[str, Any], device: torch.device) -> None:
 
         # --- Checkpoint ---
         if step % save_interval == 0:
-            ckpt_path = str(ckpt_dir / f"d3qn_{env_name}_{step}.pt")
+            env_name_safe = env_name.replace("/", "_").replace("\\", "_")
+            ckpt_path = str(ckpt_dir / f"d3qn_{env_name_safe}_{step}.pt")
             agent.save_checkpoint(ckpt_path)
             print(f"\n  [Checkpoint] Saved to {ckpt_path}")
 

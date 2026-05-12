@@ -61,6 +61,7 @@ cells.append(create_cell("code",
 "import torch.nn.functional as F\n"
 "import torch.optim as optim\n"
 "import gymnasium as gym\n"
+"import ale_py\n"
 "import cv2\n"
 "import imageio\n"
 "import matplotlib.pyplot as plt\n"
@@ -70,8 +71,11 @@ cells.append(create_cell("code",
 "from typing import Optional, Tuple, Any, SupportsFloat, Dict, List\n"
 "from tqdm.notebook import tqdm\n"
 "from IPython.display import Video, display\n\n"
+"# Dang ky namespace ALE voi Gymnasium (bat buoc voi gymnasium >= 1.0)\n"
+"gym.register_envs(ale_py)\n\n"
 "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n"
-"print(f'Device: {device}')"))
+"print(f'Device: {device}')\n"
+"print(f'ALE envs registered: {len([e for e in gym.envs.registry if \"ALE\" in e])} envs')"))
 
 # ===================== CELL 4: Utils (Atari Wrappers) =====================
 cells.append(create_cell("markdown",
@@ -227,34 +231,137 @@ cells.append(create_cell("code",
 "# Hien thi video ngay trong Colab\n"
 "display(Video('gameplay.mp4', embed=True))"))
 
-# ===================== CELL 13: Plot =====================
+# ===================== CELL 13: Baseline section header =====================
+cells.append(create_cell("markdown",
+"---\n"
+"## Baseline Comparison: Vanilla DQN vs Double DQN\n"
+"Ch\u1ea1y 2 cell b\u00ean d\u01b0\u1edbi \u0111\u1ec3 hu\u1ea5n luy\u1ec7n c\u00e1c baseline v\u1edbi **c\u00f9ng b\u1ed9 siêu tham s\u1ed1** nh\u01b0 D3QN.\n"
+"K\u1ebft qu\u1ea3 s\u1ebd \u0111\u01b0\u1ee3c so s\u00e1nh trong cell cu\u1ed1i."))
+
+# ===================== CELL 14: Vanilla DQN code =====================
+cells.append(create_cell("markdown",
+"### Vanilla DQN Baseline\n"
+"Không có Dueling, không có PER — ch\u1ec9 dùng Replay Buffer ng\u1eabu nhiên."))
+
+dqn_code = read_file("compare/vanilla_dqn/train_dqn.py")
+# Xóa phần sys.path và from src import (sẽ dùng hàm đã define ở trên)
+dqn_code = re.sub(r'import sys\n', '', dqn_code)
+dqn_code = re.sub(r'import yaml\n', '', dqn_code)
+dqn_code = re.sub(r'import time\n', '', dqn_code)
+dqn_code = re.sub(r'import argparse\n', '', dqn_code)
+dqn_code = re.sub(r'sys\.path\.append.*\n', '', dqn_code)
+dqn_code = re.sub(r'from src\.\S+ import .*\n', '', dqn_code)
+dqn_code = re.sub(r'from src import .*\n', '', dqn_code)
+# Xóa hàm main() và if __name__
+dqn_code = re.sub(r'\nif __name__.*', '', dqn_code, flags=re.DOTALL)
+# Rename train() -> train_vanilla() de tranh conflict voi D3QN
+dqn_code = re.sub(r'^def train\(', 'def train_vanilla(', dqn_code, flags=re.MULTILINE)
+cells.append(create_cell("code", dqn_code.strip()))
+
+cells.append(create_cell("code",
+"# Chay Vanilla DQN baseline\n"
+"print('=== Training Vanilla DQN Baseline ===')\n"
+"vanilla_config = dict(config)  # Copy config tu D3QN\n"
+"vanilla_agent = train_vanilla(vanilla_config, device)"))
+
+# ===================== CELL 15: Double DQN code =====================
+cells.append(create_cell("markdown",
+"### Double DQN Baseline\n"
+"Thêm cơ chế Double target (chọn action bằng online, evaluate bằng target), v\u1eabn không có Dueling hay PER."))
+
+ddqn_code = read_file("compare/double_dqn/train_ddqn.py")
+ddqn_code = re.sub(r'import sys\n', '', ddqn_code)
+ddqn_code = re.sub(r'import yaml\n', '', ddqn_code)
+ddqn_code = re.sub(r'import time\n', '', ddqn_code)
+ddqn_code = re.sub(r'import argparse\n', '', ddqn_code)
+ddqn_code = re.sub(r'sys\.path\.append.*\n', '', ddqn_code)
+ddqn_code = re.sub(r'from src\.\S+ import .*\n', '', ddqn_code)
+ddqn_code = re.sub(r'from src import .*\n', '', ddqn_code)
+ddqn_code = re.sub(r'\nif __name__.*', '', ddqn_code, flags=re.DOTALL)
+# Rename train() -> train_double() de tranh conflict
+ddqn_code = re.sub(r'^def train\(', 'def train_double(', ddqn_code, flags=re.MULTILINE)
+cells.append(create_cell("code", ddqn_code.strip()))
+
+cells.append(create_cell("code",
+"# Chay Double DQN baseline\n"
+"print('=== Training Double DQN Baseline ===')\n"
+"double_config = dict(config)\n"
+"double_agent = train_double(double_config, device)"))
+
+# ===================== CELL 16: Plot =====================
 cells.append(create_cell("markdown", "## 12. Tr\u1ef1c quan h\u00f3a k\u1ebft qu\u1ea3"))
 cells.append(create_cell("code",
-"import re as regex\n\n"
-"episodes_list, rewards_list = [], []\n"
-"with open('logs/training.log', 'r') as f:\n"
-"    for line in f:\n"
-"        m = regex.search(r'ep=(\\d+),\\s*reward=([\\-\\d\\.]+)', line)\n"
-"        if m:\n"
-"            episodes_list.append(int(m.group(1)))\n"
-"            rewards_list.append(float(m.group(2)))\n\n"
-"plt.figure(figsize=(12, 5))\n"
-"plt.plot(episodes_list, rewards_list, alpha=0.3, color='blue', label='Raw Reward')\n"
-"window = 50\n"
-"if len(rewards_list) > window:\n"
-"    smoothed = np.convolve(rewards_list, np.ones(window)/window, mode='valid')\n"
-"    plt.plot(range(window, len(rewards_list)+1), smoothed, color='red', linewidth=2, label=f'MA-{window}')\n"
-"plt.xlabel('Episode')\n"
-"plt.ylabel('Reward')\n"
-"plt.title('D3QN Training Progress')\n"
-"plt.legend()\n"
-"plt.grid(True, alpha=0.3)\n"
-"plt.tight_layout()\n"
-"plt.savefig('training_curve.png', dpi=150)\n"
-"plt.show()"))
+"import re as regex\n"
+"import os\n\n"
+"log_path = 'logs/training.log'\n"
+"if not os.path.exists(log_path):\n"
+"    print('Log chua co, hay train truoc!')\n"
+"else:\n"
+"    episodes_list, rewards_list = [], []\n"
+"    with open(log_path, 'r') as f:\n"
+"        for line in f:\n"
+"            m = regex.search(r'ep=(\\\\d+),\\\\s*reward=([\\\\-\\\\d\\\\.]+)', line)\n"
+"            if m:\n"
+"                episodes_list.append(int(m.group(1)))\n"
+"                rewards_list.append(float(m.group(2)))\n"
+"    plt.figure(figsize=(12, 5))\n"
+"    plt.plot(episodes_list, rewards_list, alpha=0.3, color='blue', label='Raw Reward')\n"
+"    window = 50\n"
+"    if len(rewards_list) > window:\n"
+"        smoothed = np.convolve(rewards_list, np.ones(window)/window, mode='valid')\n"
+"        plt.plot(range(window, len(rewards_list)+1), smoothed, color='red', linewidth=2, label=f'MA-{window}')\n"
+"    plt.xlabel('Episode')\n"
+"    plt.ylabel('Reward')\n"
+"    plt.title('D3QN Training Progress')\n"
+"    plt.legend()\n"
+"    plt.grid(True, alpha=0.3)\n"
+"    plt.tight_layout()\n"
+"    plt.savefig('training_curve.png', dpi=150)\n"
+"    plt.show()\n"
+"    print(f'Total episodes: {len(episodes_list)}')"))
 
-# ===================== Write notebook =====================
+
+cells.append(create_cell("code",
+"import re as regex\n"
+"import os\n\n"
+"log_path = 'logs/training.log'\n"
+"if not os.path.exists(log_path):\n"
+"    print('Log chua co, hay train truoc!')\n"
+"else:\n"
+"    episodes_list, rewards_list = [], []\n"
+"    with open(log_path, 'r') as f:\n"
+"        for line in f:\n"
+"            m = regex.search(r'ep=(\\\\d+),\\\\s*reward=([\\\\-\\\\d\\\\.]+)', line)\n"
+"            if m:\n"
+"                episodes_list.append(int(m.group(1)))\n"
+"                rewards_list.append(float(m.group(2)))\n"
+"    plt.figure(figsize=(12, 5))\n"
+"    plt.plot(episodes_list, rewards_list, alpha=0.3, color='blue', label='Raw Reward')\n"
+"    window = 50\n"
+"    if len(rewards_list) > window:\n"
+"        smoothed = np.convolve(rewards_list, np.ones(window)/window, mode='valid')\n"
+"        plt.plot(range(window, len(rewards_list)+1), smoothed, color='red', linewidth=2, label=f'MA-{window}')\n"
+"    plt.xlabel('Episode')\n"
+"    plt.ylabel('Reward')\n"
+"    plt.title('D3QN Training Progress')\n"
+"    plt.legend()\n"
+"    plt.grid(True, alpha=0.3)\n"
+"    plt.tight_layout()\n"
+"    plt.savefig('training_curve.png', dpi=150)\n"
+"    plt.show()\n"
+"    print(f'Total episodes: {len(episodes_list)}')"))
+
+# ===================== Write + Validate =====================
 with open("HW4_D3QN.ipynb", "w", encoding="utf-8") as f:
     json.dump(notebook, f, indent=2, ensure_ascii=False)
 
 print("Done! Created HW4_D3QN.ipynb")
+print("Running validation...")
+
+import subprocess, sys
+result = subprocess.run([sys.executable, "validate_notebook.py"], capture_output=True, text=True)
+print(result.stdout)
+if result.returncode != 0:
+    print("[VALIDATION FAILED]")
+else:
+    print("[VALIDATION PASSED] Safe to upload to Colab!")
