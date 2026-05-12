@@ -336,35 +336,43 @@ cells.append(create_cell("code",
 
 # ===================== CELL 16: Plot =====================
 cells.append(create_cell("markdown", "## 12. Tr\u1ef1c quan h\u00f3a k\u1ebft qu\u1ea3"))
-cells.append(create_cell("code",
-"import re as regex\n"
-"import os\n\n"
-"log_path = 'logs/training.log'\n"
-"if not os.path.exists(log_path):\n"
-"    print('Log chua co, hay train truoc!')\n"
-"else:\n"
-"    episodes_list, rewards_list = [], []\n"
-"    with open(log_path, 'r') as f:\n"
-"        for line in f:\n"
-"            m = regex.search(r'ep=(\\\\d+),\\\\s*reward=([\\\\-\\\\d\\\\.]+)', line)\n"
-"            if m:\n"
-"                episodes_list.append(int(m.group(1)))\n"
-"                rewards_list.append(float(m.group(2)))\n"
-"    plt.figure(figsize=(12, 5))\n"
-"    plt.plot(episodes_list, rewards_list, alpha=0.3, color='blue', label='Raw Reward')\n"
-"    window = 50\n"
-"    if len(rewards_list) > window:\n"
-"        smoothed = np.convolve(rewards_list, np.ones(window)/window, mode='valid')\n"
-"        plt.plot(range(window, len(rewards_list)+1), smoothed, color='red', linewidth=2, label=f'MA-{window}')\n"
-"    plt.xlabel('Episode')\n"
-"    plt.ylabel('Reward')\n"
-"    plt.title('D3QN Training Progress')\n"
-"    plt.legend()\n"
-"    plt.grid(True, alpha=0.3)\n"
-"    plt.tight_layout()\n"
-"    plt.savefig('training_curve.png', dpi=150)\n"
-"    plt.show()\n"
-"    print(f'Total episodes: {len(episodes_list)}')"))
+
+# Dung triple-quote de tranh van de escape backslash trong regex
+plot_code = r"""import re as regex
+import os
+
+log_path = 'logs/training.log'
+if not os.path.exists(log_path):
+    print('Log chua co, hay train truoc!')
+else:
+    episodes_list, rewards_list = [], []
+    with open(log_path, 'r') as f:
+        for line in f:
+            m = regex.search(r'ep=(\d+),\s*reward=([\-\d\.]+)', line)
+            if m:
+                episodes_list.append(int(m.group(1)))
+                rewards_list.append(float(m.group(2)))
+    print(f'Total episodes parsed: {len(episodes_list)}')
+    if episodes_list:
+        plt.figure(figsize=(12, 5))
+        plt.plot(episodes_list, rewards_list, alpha=0.3, color='steelblue', label='Raw Reward')
+        window = min(50, len(rewards_list) // 2)
+        if window > 1:
+            smoothed = np.convolve(rewards_list, np.ones(window)/window, mode='valid')
+            plt.plot(range(window, len(rewards_list)+1), smoothed,
+                     color='red', linewidth=2, label=f'MA-{window}')
+        plt.xlabel('Episode')
+        plt.ylabel('Reward')
+        plt.title('D3QN Training Progress — ALE/Pong-v5')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig('training_curve.png', dpi=150)
+        plt.show()
+    else:
+        print('Khong co episode nao duoc parse. Kiem tra lai dinh dang file log!')
+"""
+cells.append(create_cell("code", plot_code.strip()))
 
 
 
