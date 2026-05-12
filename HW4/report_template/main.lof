@@ -1,3 +1,4 @@
 \babel@toc {vietnamese}{}\relax 
 \contentsline {figure}{\numberline {1}{\ignorespaces Biểu đồ tiến trình huấn luyện của D3QN trên môi trường Pong}}{5}{figure.caption.3}%
-\contentsline {figure}{\numberline {2}{\ignorespaces Sơ đồ kiến trúc luồng dữ liệu (Pipeline) của hệ thống đã triển khai}}{6}{figure.caption.4}%
+\contentsline {figure}{\numberline {2}{\ignorespaces So sánh tốc độ hội tụ và hiệu suất giữa D3QN và các kiến trúc cơ sở (Vanilla DQN, Double DQN)}}{6}{figure.caption.4}%
+\contentsline {figure}{\numberline {3}{\ignorespaces Sơ đồ kiến trúc luồng dữ liệu (Pipeline) của hệ thống đã triển khai}}{7}{figure.caption.5}%

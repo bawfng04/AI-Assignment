@@ -1,9 +1,11 @@
 # 🎮 Dueling Double DQN (D3QN) for Atari Games
+**Trí tuệ Nhân tạo - Bài Tập Lớn 4**
 
-A production-grade PyTorch implementation of **Dueling Double Deep Q-Network (D3QN)** with **Prioritized Experience Replay (PER)** for Atari game environments.
+A production-grade PyTorch implementation of **Dueling Double Deep Q-Network (D3QN)** with **Prioritized Experience Replay (PER)** for Atari game environments (specifically optimized for `ALE/Pong-v5`). 
+
+This project also includes a complete Streamlit Web Dashboard for monitoring, mathematical documentation, and baseline comparisons (Vanilla DQN & Double DQN).
 
 ## 🏗️ Architecture
-
 This implementation combines three key advances in Deep RL:
 
 | Component | Paper | Key Benefit |
@@ -13,59 +15,76 @@ This implementation combines three key advances in Deep RL:
 | **Prioritized Replay** | Schaul et al., 2016 | Efficient experience utilization |
 
 ## 📁 Project Structure
-
-```
+```text
 HW4/
-├── configs/default.yaml      # Hyperparameter configuration
+├── configs/default.yaml        # Hyperparameter configuration
 ├── src/
-│   ├── network.py             # Dueling DQN CNN architecture
-│   ├── agent.py               # D3QN agent (selection, learning, updates)
-│   ├── replay_buffer.py       # PER with SumTree data structure
-│   ├── utils.py               # DeepMind Atari wrappers
-│   └── logger.py              # TensorBoard logging
-├── train.py                   # Training loop
-├── eval.py                    # Evaluation & recording
-└── report/report.md           # Theory report skeleton
+│   ├── network.py              # Dueling DQN CNN architecture
+│   ├── agent.py                # D3QN agent (Double target, Hard/Soft updates)
+│   ├── replay_buffer.py        # PER with SumTree data structure O(log N)
+│   ├── utils.py                # DeepMind Atari wrappers (Frame Stacking, Grayscale)
+│   └── logger.py               # TensorBoard & Console logging
+├── compare/                    # Baseline Architectures (for ablation studies)
+│   ├── vanilla_dqn/train_dqn.py   # Vanilla DQN (No Dueling, No PER)
+│   └── double_dqn/train_ddqn.py   # Double DQN (No Dueling, No PER)
+├── report_template/            # LaTeX Source Code for Academic Report
+├── app.py                      # 🌟 Streamlit Web Dashboard UI
+├── plot_logs.py                # Parser for heuristic.log to generate Metric PNGs
+├── plot_baselines.py           # Generates comparative plots (D3QN vs Baselines)
+├── train.py                    # Main Training loop
+└── eval.py                     # Evaluation & video recording script
 ```
 
 ## 🚀 Quick Start
 
-### Installation
+### 1. Installation
+Ensure you are using Python 3.10 or 3.11 for maximum compatibility with `ale-py`.
 ```bash
 pip install -r requirements.txt
+pip install "gymnasium[atari,accept-rom-license]" ale-py
+pip install streamlit matplotlib
 ```
 
-### Training
+### 2. Training the Main Model (D3QN)
 ```bash
-# Default: PongNoFrameskip-v4
+# Default: ALE/Pong-v5
 python train.py
 
-# Custom environment
-python train.py --env BreakoutNoFrameskip-v4 --total-timesteps 2000000
-
-# Use specific config
-python train.py --config configs/default.yaml --seed 123
+# Custom environment & steps
+python train.py --env ALE/Breakout-v5 --total-timesteps 2000000
 ```
 
-### Evaluation
+### 3. Training Baselines (For Comparison)
+To prove the superiority of D3QN, run the baselines:
 ```bash
-# Evaluate trained agent
-python eval.py --checkpoint checkpoints/d3qn_PongNoFrameskip-v4_final.pt
-
-# Record gameplay as GIF
-python eval.py --checkpoint checkpoints/d3qn_final.pt --record gameplay.gif
-
-# Record as MP4
-python eval.py --checkpoint checkpoints/d3qn_final.pt --record gameplay.mp4
+python compare/vanilla_dqn/train_dqn.py --config configs/default.yaml
+python compare/double_dqn/train_ddqn.py --config configs/default.yaml
 ```
 
-### TensorBoard
+### 4. Evaluation & Recording Gameplay
+*Note: Due to Gymnasium namespace updates, always explicitly provide the `--env` flag.*
 ```bash
-tensorboard --logdir runs/
+# Record gameplay as MP4
+python eval.py --checkpoint checkpoints/d3qn_ALE/Pong-v5_20000.pt --env ALE/Pong-v5 --record gameplay.mp4
+
+# Record as GIF
+python eval.py --checkpoint checkpoints/d3qn_ALE/Pong-v5_20000.pt --env ALE/Pong-v5 --record gameplay.gif
+```
+
+## 📊 Streamlit Web Dashboard
+Instead of just relying on the terminal, you can visualize the entire training process and watch the AI play using the integrated web app.
+
+First, extract the logs and generate plots:
+```bash
+python plot_logs.py
+python plot_baselines.py
+```
+Then, launch the UI:
+```bash
+streamlit run app.py
 ```
 
 ## ⚙️ Key Hyperparameters
-
 | Parameter | Default | Description |
 |---|---|---|
 | `gamma` | 0.99 | Discount factor |
@@ -77,17 +96,7 @@ tensorboard --logdir runs/
 | `PER alpha` | 0.6 | Priority exponent |
 | `PER beta` | 0.4 → 1.0 | IS weight annealing |
 
-## 📊 Tracked Metrics (TensorBoard)
-
-- `episode/reward` — Per-episode total reward
-- `episode/epsilon` — Exploration rate decay
-- `train/loss` — Huber loss per training step
-- `train/mean_q_value` — Average Q-value estimates
-- `train/grad_norm` — Gradient norm (monitors stability)
-- `buffer/per_beta` — PER importance-sampling exponent
-
 ## 📚 References
-
 1. Mnih, V., et al. (2015). "Human-level control through deep reinforcement learning." *Nature*.
 2. van Hasselt, H., et al. (2016). "Deep Reinforcement Learning with Double Q-learning." *AAAI*.
 3. Wang, Z., et al. (2016). "Dueling Network Architectures for Deep Reinforcement Learning." *ICML*.
