@@ -17,6 +17,7 @@ FULL_SKIP_PATTERNS = [
     "display(Video(",
     "gym.make(",
     "make_atari_env(",
+    "google.colab",
 ]
 
 # Các dòng cần patch (thay thế để chạy được locally)

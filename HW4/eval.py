@@ -52,7 +52,7 @@ def evaluate(
     agent: D3QNAgent,
     env_name: str,
     n_episodes: int,
-    seed: int,
+    seed: int = 42,
     render: bool = False,
     record_path: str = None,
 ) -> Dict[str, Any]:

@@ -109,8 +109,12 @@ class PrioritizedReplayBuffer:
 
     def add(self, state: np.ndarray, action: int, reward: float,
             next_state: np.ndarray, done: bool) -> None:
-        transition = Transition(state=state, action=action, reward=reward,
-                                next_state=next_state, done=done)
+        # Luu state dang uint8 de tiet kiem RAM (giam 4x so voi float32)
+        # state hien tai la float32 [0,1] tu preprocess_observation
+        state_u8 = (state * 255).clip(0, 255).astype(np.uint8)
+        next_state_u8 = (next_state * 255).clip(0, 255).astype(np.uint8)
+        transition = Transition(state=state_u8, action=action, reward=reward,
+                                next_state=next_state_u8, done=done)
         max_p = self.tree.max_priority
         priority = max_p ** self.alpha if max_p > 0 else 1.0
         self.tree.add(priority, transition)
@@ -142,10 +146,10 @@ class PrioritizedReplayBuffer:
         is_weights = (len(self) * sampling_probs) ** (-self.beta)
         is_weights /= is_weights.max()
 
-        return (np.array(states, dtype=np.float32),
+        return (np.array(states, dtype=np.uint8).astype(np.float32) / 255.0,
                 np.array(actions, dtype=np.int64),
                 np.array(rewards, dtype=np.float32),
-                np.array(next_states, dtype=np.float32),
+                np.array(next_states, dtype=np.uint8).astype(np.float32) / 255.0,
                 np.array(dones, dtype=np.float32),
                 np.array(indices, dtype=np.int64),
                 np.array(is_weights, dtype=np.float32))

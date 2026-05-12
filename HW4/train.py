@@ -189,7 +189,8 @@ def train(config: Dict[str, Any], device: torch.device) -> None:
             print(f"\n  [Checkpoint] Saved to {ckpt_path}")
 
     # --- Final Save ---
-    final_path = str(ckpt_dir / f"d3qn_{env_name}_final.pt")
+    env_name_safe = env_name.replace("/", "_").replace("\\", "_")
+    final_path = str(ckpt_dir / f"d3qn_{env_name_safe}_final.pt")
     agent.save_checkpoint(final_path)
     print(f"\n[Training Complete] Final checkpoint: {final_path}")
     print(f"  Total episodes: {episode_count}")
@@ -197,6 +198,7 @@ def train(config: Dict[str, Any], device: torch.device) -> None:
 
     logger.close()
     env.close()
+    return agent
 
 
 def main() -> None:

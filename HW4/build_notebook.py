@@ -138,8 +138,8 @@ cells.append(create_cell("code",
 # ===================== CELL 9: Config =====================
 cells.append(create_cell("markdown",
 "## 8. C\u1ea5u h\u00ecnh Hu\u1ea5n luy\u1ec7n\n"
-"Thay v\u00ec \u0111\u1ecdc file YAML, ta khai b\u00e1o tr\u1ef1c ti\u1ebfp dictionary config \u1edf \u0111\u00e2y.\n"
-"B\u1ea1n c\u00f3 th\u1ec3 t\u00f9y ch\u1ec9nh `total_timesteps` t\u00f9y theo th\u1eddi gian GPU c\u00f2n l\u1ea1i tr\u00ean Colab."))
+"Config n\u00e0y \u0111\u00e3 \u0111\u01b0\u1ee3c t\u1ed1i u\u01b0 cho Colab FREE tier (12GB RAM).\n"
+"Buffer uint8 + 30K capacity = ~1.6GB RAM. \u0110\u1ec3 train to\u00e0n b\u1ed9 300K steps m\u1ea5t kho\u1ea3ng 1-2 gi\u1edd."))
 
 config_code = (
 "config = {\n"
@@ -158,8 +158,9 @@ config_code = (
 "        'tau': 1.0,\n"
 "        'grad_clip': 10.0\n"
 "    },\n"
+"    # Buffer 30K uint8: chi ~1.6GB RAM (phu hop Colab FREE)\n"
 "    'buffer': {\n"
-"        'capacity': 100000,\n"
+"        'capacity': 30000,\n"
 "        'alpha': 0.6,\n"
 "        'beta_start': 0.4,\n"
 "        'beta_end': 1.0,\n"
@@ -173,7 +174,7 @@ config_code = (
 "        'decay_steps': 100000\n"
 "    },\n"
 "    'training': {\n"
-"        'total_timesteps': 500000,\n"
+"        'total_timesteps': 300000,  # ~1-2 gio tren Colab T4\n"
 "        'learning_starts': 10000,\n"
 "        'train_freq': 4,\n"
 "        'save_interval': 50000,\n"
@@ -187,6 +188,7 @@ config_code = (
 "}\n\n"
 "print('Config da san sang!')\n"
 "print(f\"   Env: {config['env']['name']}\")\n"
+"print(f\"   Buffer: {config['buffer']['capacity']:,} transitions (uint8, ~1.6GB RAM)\")\n"
 "print(f\"   Total timesteps: {config['training']['total_timesteps']:,}\")"
 )
 cells.append(create_cell("code", config_code))
@@ -207,14 +209,42 @@ cells.append(create_cell("code", train_body))
 
 # ===================== CELL 11: Run training =====================
 cells.append(create_cell("markdown",
-"## 10. B\u1eaft \u0111\u1ea7u Hu\u1ea5n luy\u1ec7n!\n"
-"Ch\u1ea1y cell b\u00ean d\u01b0\u1edbi \u0111\u1ec3 train D3QN tr\u00ean GPU. Qu\u00e1 tr\u00ecnh s\u1ebd m\u1ea5t kho\u1ea3ng **1-3 gi\u1edd** t\u00f9y `total_timesteps`."))
-cells.append(create_cell("code", "agent = train(config, device)"))
+"## 10. Hu\u1ea5n luy\u1ec7n ho\u1eb7c Load Checkpoint\n"
+"Ch\u1ecdn **Option A** (train m\u1edbi) ho\u1eb7c **Option B** (load file `.pt` \u0111\u00e3 c\u00f3) r\u1ed3i ch\u1ea1y cell t\u01b0\u01a1ng \u1ee9ng."))
+
+cells.append(create_cell("code",
+"# ========== OPTION A: Train m\u1edbi t\u1eeb \u0111\u1ea7u ==========\n"
+"# B\u1ecf comment 1 d\u00f2ng d\u01b0\u1edbi n\u1ebfu mu\u1ed1n train m\u1edbi\n"
+"# agent = train(config, device)\n\n"
+"# ========== OPTION B: Load checkpoint \u0111\u00e3 train s\u1eb5n ==========\n"
+"# Thay ten file checkpoint cho dung voi file cua ban\n"
+"CHECKPOINT = 'checkpoints/d3qn_ALE_Pong-v5_final.pt'\n\n"
+"import os, glob\n"
+"# Tu dong tim checkpoint moi nhat neu file khong ton tai\n"
+"if not os.path.exists(CHECKPOINT):\n"
+"    pts = sorted(glob.glob('checkpoints/*.pt'))\n"
+"    CHECKPOINT = pts[-1] if pts else None\n"
+"    print(f'Auto-found checkpoint: {CHECKPOINT}')\n\n"
+"if CHECKPOINT and os.path.exists(CHECKPOINT):\n"
+"    env_tmp = make_atari_env(config['env']['name'], seed=42, clip_rewards=False, episodic_life=False)\n"
+"    obs_shape = env_tmp.observation_space.shape\n"
+"    state_shape = (obs_shape[2], obs_shape[0], obs_shape[1])\n"
+"    n_actions = env_tmp.action_space.n\n"
+"    env_tmp.close()\n\n"
+"    agent = D3QNAgent(state_shape, n_actions, config, device)\n"
+"    agent.load_checkpoint(CHECKPOINT)\n"
+"    agent.online_net.eval()\n"
+"    print(f'Agent loaded from: {CHECKPOINT}')\n"
+"else:\n"
+"    print('Khong tim thay checkpoint! Hay chay Option A de train truoc.')"))
 
 # ===================== CELL 12: Evaluation =====================
 cells.append(create_cell("markdown",
 "## 11. \u0110\u00e1nh gi\u00e1 & Ghi h\u00ecnh Gameplay\n"
-"Sau khi train xong, ch\u1ea1y cell b\u00ean d\u01b0\u1edbi \u0111\u1ec3 xem Agent ch\u01a1i game v\u00e0 ghi l\u1ea1i video."))
+"Agent m\u00e0u **xanh l\u00e1 (b\u00ean ph\u1ea3i)** l\u00e0 D3QN c\u1ee7a b\u1ea1n. \n"
+"Agent m\u00e0u **cam (b\u00ean tr\u00e1i)** l\u00e0 bot AI c\u1ee7a Atari.\n"
+"S\u1ed1 tr\u00ean m\u00e0n h\u00ecnh l\u00e0 t\u1ec9 s\u1ed1: `\u0110\u1ed1i th\u1ee7 | Agent`.\n"
+"Reward -19 = thua 19 \u0111i\u1ec3m t\u1ed5ng c\u1ed9ng. C\u1ea7n ~1-2M steps \u0111\u1ec3 agent b\u1eaft \u0111\u1ea7u th\u1eafng."))
 
 eval_func = read_file("eval.py")
 # Extract evaluate() and save_recording()
@@ -226,10 +256,26 @@ else:
 cells.append(create_cell("code", eval_body))
 
 cells.append(create_cell("code",
-"# Chay evaluation va ghi hinh\n"
-"rewards = evaluate(agent, config['env']['name'], n_episodes=5, record_path='gameplay.mp4')\n\n"
+"# Chay evaluation va ghi hinh (5 episodes)\n"
+"rewards = evaluate(agent, config['env']['name'], n_episodes=5, seed=42, record_path='gameplay.mp4')\n\n"
 "# Hien thi video ngay trong Colab\n"
 "display(Video('gameplay.mp4', embed=True))"))
+
+# Cell download checkpoint + video ve may
+cells.append(create_cell("markdown", "### \u2b07\ufe0f T\u1ea3i file v\u1ec1 m\u00e1y"))
+cells.append(create_cell("code",
+"from google.colab import files\n\n"
+"# Tai video gameplay\n"
+"if os.path.exists('gameplay.mp4'):\n"
+"    files.download('gameplay.mp4')\n\n"
+"# Tai checkpoint cuoi cung\n"
+"ckpts = sorted(glob.glob('checkpoints/*.pt'))\n"
+"if ckpts:\n"
+"    files.download(ckpts[-1])\n"
+"    print(f'Downloaded: {ckpts[-1]}')\n\n"
+"# Tai log training\n"
+"if os.path.exists('logs/training.log'):\n"
+"    files.download('logs/training.log')"))
 
 # ===================== CELL 13: Baseline section header =====================
 cells.append(create_cell("markdown",
@@ -321,35 +367,6 @@ cells.append(create_cell("code",
 "    print(f'Total episodes: {len(episodes_list)}')"))
 
 
-cells.append(create_cell("code",
-"import re as regex\n"
-"import os\n\n"
-"log_path = 'logs/training.log'\n"
-"if not os.path.exists(log_path):\n"
-"    print('Log chua co, hay train truoc!')\n"
-"else:\n"
-"    episodes_list, rewards_list = [], []\n"
-"    with open(log_path, 'r') as f:\n"
-"        for line in f:\n"
-"            m = regex.search(r'ep=(\\\\d+),\\\\s*reward=([\\\\-\\\\d\\\\.]+)', line)\n"
-"            if m:\n"
-"                episodes_list.append(int(m.group(1)))\n"
-"                rewards_list.append(float(m.group(2)))\n"
-"    plt.figure(figsize=(12, 5))\n"
-"    plt.plot(episodes_list, rewards_list, alpha=0.3, color='blue', label='Raw Reward')\n"
-"    window = 50\n"
-"    if len(rewards_list) > window:\n"
-"        smoothed = np.convolve(rewards_list, np.ones(window)/window, mode='valid')\n"
-"        plt.plot(range(window, len(rewards_list)+1), smoothed, color='red', linewidth=2, label=f'MA-{window}')\n"
-"    plt.xlabel('Episode')\n"
-"    plt.ylabel('Reward')\n"
-"    plt.title('D3QN Training Progress')\n"
-"    plt.legend()\n"
-"    plt.grid(True, alpha=0.3)\n"
-"    plt.tight_layout()\n"
-"    plt.savefig('training_curve.png', dpi=150)\n"
-"    plt.show()\n"
-"    print(f'Total episodes: {len(episodes_list)}')"))
 
 # ===================== Write + Validate =====================
 with open("HW4_D3QN.ipynb", "w", encoding="utf-8") as f:
