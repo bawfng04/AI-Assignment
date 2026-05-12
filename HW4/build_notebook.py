@@ -30,27 +30,32 @@ notebook = {
 
 cells = notebook['cells']
 
-# ===================== CELL 1: Title =====================
+# ===================== CELL 1: Header =====================
 cells.append(create_cell("markdown",
 "# \U0001F3AE Dueling Double DQN (D3QN) \u2014 Atari RL Agent\n"
 "**B\u00e0i T\u1eadp L\u1edbn 4 \u2014 Tr\u00ed tu\u1ec7 Nh\u00e2n t\u1ea1o**\n\n"
-"Notebook t\u1ed5ng h\u1ee3p to\u00e0n b\u1ed9 m\u00e3 ngu\u1ed3n d\u1ef1 \u00e1n D3QN + Prioritized Experience Replay.\n\n"
-"**Ki\u1ebfn tr\u00fac k\u1ebft h\u1ee3p 3 c\u1ea3i ti\u1ebfn ch\u00ednh:**\n"
-"- **Double DQN** \u2014 Ch\u1ed1ng Overestimation Bias\n"
-"- **Dueling Network** \u2014 T\u00e1ch bi\u1ec7t V(s) v\u00e0 A(s,a)\n"
-"- **Prioritized Experience Replay** \u2014 L\u1ea5y m\u1eabu th\u00f4ng minh b\u1eb1ng SumTree"))
+"Notebook t\u1ed5ng h\u1ee3p to\u00e0n b\u1ed9 m\u00e3 ngu\u1ed3n d\u1ef1 \u00e1n D3QN + Prioritized Experience Replay c\u00f9ng c\u00e1c Baseline so s\u00e1nh.\n\n"
+"**Ki\u1ebfn tr\u00fac \u0111\u01b0\u1ee3c ki\u1ec3m th\u1eed:**\n"
+"- **D3QN (Ours)**: Double DQN + Dueling Network + Prioritized Experience Replay (SumTree).\n"
+"- **Double DQN Baseline**: Double Target, Standard Replay Buffer (uint8 optimized).\n"
+"- **Vanilla DQN Baseline**: Standard Target, Standard Replay Buffer (uint8 optimized)."))
 
-# ===================== CELL 2: pip install =====================
-cells.append(create_cell("markdown", "## 1. C\u00e0i \u0111\u1eb7t th\u01b0 vi\u1ec7n"))
+# ===================== CELL 2: Setup =====================
+cells.append(create_cell("markdown", "## 1. C\u00e0i \u0111\u1eb7t M\u00f4i tr\u01b0\u1eddng & Th\u01b0 vi\u1ec7n"))
 cells.append(create_cell("code",
 "# Cai dat moi truong Atari\n"
 "!pip install -q gymnasium[atari] ale-py autorom\n"
 "!pip install -q opencv-python-headless imageio[ffmpeg]\n\n"
 "import subprocess\n"
-"subprocess.run(['AutoROM', '--accept-license'], capture_output=True)"))
+"subprocess.run(['AutoROM', '--accept-license'], capture_output=True)\n\n"
+"# Tao san cac thu muc luu tru can thiet\n"
+"import os\n"
+"for d in ['logs/vanilla_dqn', 'logs/double_dqn', 'checkpoints/vanilla_dqn', 'checkpoints/double_dqn']:\n"
+"    os.makedirs(d, exist_ok=True)\n"
+"print('Setup thu muc thanh cong!')"))
 
 # ===================== CELL 3: Imports =====================
-cells.append(create_cell("markdown", "## 2. Import th\u01b0 vi\u1ec7n"))
+cells.append(create_cell("markdown", "## 2. Import Th\u01b0 vi\u1ec7n v\u00e0 Kh\u1edfi t\u1ea1o"))
 cells.append(create_cell("code",
 "import os\n"
 "import random\n"
@@ -68,56 +73,169 @@ cells.append(create_cell("code",
 "from collections import deque\n"
 "from dataclasses import dataclass\n"
 "from pathlib import Path\n"
-"from typing import Optional, Tuple, Any, SupportsFloat, Dict, List\n"
+"from typing import Optional, Tuple, Any, Dict, List\n"
 "from tqdm.notebook import tqdm\n"
 "from IPython.display import Video, display\n\n"
-"# Dang ky namespace ALE voi Gymnasium (bat buoc voi gymnasium >= 1.0)\n"
+"# Dang ky namespace ALE voi Gymnasium v1.x\n"
 "gym.register_envs(ale_py)\n\n"
 "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n"
-"print(f'Device: {device}')\n"
-"print(f'ALE envs registered: {len([e for e in gym.envs.registry if \"ALE\" in e])} envs')"))
+"print(f'Device: {device}')"))
 
-# ===================== CELL 4: Utils (Atari Wrappers) =====================
-cells.append(create_cell("markdown",
-"## 3. Ti\u1ec1n x\u1eed l\u00fd M\u00f4i tr\u01b0\u1eddng Atari (Wrappers)\n"
-"C\u00e1c wrapper theo chu\u1ea9n DeepMind: NoopReset \u2192 MaxAndSkip \u2192 EpisodicLife \u2192 Fire \u2192 WarpFrame \u2192 ClipReward \u2192 FrameStack"))
-
+# ===================== CELL 4: Utils =====================
+cells.append(create_cell("markdown", "## 3. C\u00e1c H\u00e0m Ti\u1ec1n x\u1eed l\u00fd (Atari Wrappers)"))
 utils_code = read_file("src/utils.py")
-# Cut only the file header docstring + import lines, keep from set_global_seeds onward
 utils_code = re.sub(r'^.*?(?=def set_global_seeds)', '', utils_code, flags=re.DOTALL)
 cells.append(create_cell("code", utils_code.strip()))
 
-# ===================== CELL 5: Replay Buffer (SumTree + PER) =====================
-cells.append(create_cell("markdown",
-"## 4. Prioritized Experience Replay (SumTree & Buffer)\n"
-"C\u1ea5u tr\u00fac SumTree cho ph\u00e9p l\u1ea5y m\u1eabu theo x\u00e1c su\u1ea5t \u01b0u ti\u00ean v\u1edbi th\u1eddi gian O(log N)."))
+# ===================== CELL 5: Replay Buffers =====================
+cells.append(create_cell("markdown", "## 4. C\u1ea5u tr\u00fac B\u1ed9 nh\u1edb \u0110\u1ec7m (Replay Buffers)\n"
+"Bao g\u1ed5m **Prioritized Replay Buffer** (cho D3QN) v\u00e0 **Standard Replay Buffer** (cho Baselines).\n"
+"T\u1ea5t c\u1ea3 \u0111\u1ec1u \u0111\u01b0\u1ee3c t\u1ed1i \u01b0u h\u00f3a l\u01b0u tr\u1eef d\u01b0\u1edbi d\u1ea1ng `uint8` \u0111\u1ec3 tr\u00e1nh OOM tr\u00ean Colab."))
 
 buffer_code = read_file("src/replay_buffer.py")
-# Keep from @dataclass onward (includes Transition + SumTree + PER)
 buffer_code = re.sub(r'^.*?(?=@dataclass)', '', buffer_code, flags=re.DOTALL)
-cells.append(create_cell("code", buffer_code.strip()))
 
-# ===================== CELL 6: Network (Dueling DQN) =====================
-cells.append(create_cell("markdown",
-"## 5. Ki\u1ebfn tr\u00fac M\u1ea1ng N\u01a1-ron (Dueling DQN)\n"
-"T\u00e1ch hai lu\u1ed3ng Value V(s) v\u00e0 Advantage A(s,a), k\u1ebft h\u1ee3p b\u1eb1ng c\u00f4ng th\u1ee9c:\n"
-"$$Q(s,a) = V(s) + A(s,a) - \\\\text{mean}(A)$$"))
+# Tích hợp thêm StandardReplayBuffer tối ưu uint8 ngay trong cell này
+std_buffer_code = """
+class StandardReplayBuffer:
+    \"\"\"Standard Experience Replay Buffer optimized with uint8 storage.\"\"\"
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.buffer = collections.deque(maxlen=capacity)
+
+    def add(self, state: np.ndarray, action: int, reward: float, next_state: np.ndarray, done: bool):
+        # Nén state dạng uint8 (tiết kiệm 4x RAM)
+        s_u8 = (state * 255).clip(0, 255).astype(np.uint8)
+        ns_u8 = (next_state * 255).clip(0, 255).astype(np.uint8)
+        self.buffer.append((s_u8, action, reward, ns_u8, done))
+
+    def sample(self, batch_size: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        batch = random.sample(self.buffer, batch_size)
+        states, actions, rewards, next_states, dones = zip(*batch)
+
+        # Giải nén sang float32 khi đưa lên GPU
+        s_arr = np.array(states, dtype=np.uint8).astype(np.float32) / 255.0
+        ns_arr = np.array(next_states, dtype=np.uint8).astype(np.float32) / 255.0
+
+        return (
+            torch.tensor(s_arr, dtype=torch.float32),
+            torch.tensor(actions, dtype=torch.long),
+            torch.tensor(rewards, dtype=torch.float32),
+            torch.tensor(ns_arr, dtype=torch.float32),
+            torch.tensor(dones, dtype=torch.float32)
+        )
+
+    def __len__(self):
+        return len(self.buffer)
+"""
+cells.append(create_cell("code", buffer_code.strip() + "\n\n" + std_buffer_code.strip()))
+
+# ===================== CELL 6: Networks =====================
+cells.append(create_cell("markdown", "## 5. Ki\u1ebfn tr\u00fac M\u1ea1ng N\u01a1-ron\n"
+"Bao g\u1ed5m **Dueling DQN** (chia nh\u00e1nh Value v\u00e0 Advantage) v\u00e0 **Standard Network** (cho Baselines)."))
 
 network_code = read_file("src/network.py")
 network_code = re.sub(r'^.*?(?=class DuelingDQN)', '', network_code, flags=re.DOTALL)
-cells.append(create_cell("code", network_code.strip()))
 
-# ===================== CELL 7: Agent (D3QN) =====================
-cells.append(create_cell("markdown",
-"## 6. T\u00e1c t\u1eed D3QN (Agent Logic)\n"
-"K\u1ebft h\u1ee3p Double DQN + Dueling + PER trong m\u1ed9t Agent duy nh\u1ea5t."))
+# Tích hợp thêm Standard DQN Network
+std_network_code = """
+class StandardDQN(nn.Module):
+    \"\"\"Standard Deep Q-Network without Dueling architecture.\"\"\"
+    def __init__(self, input_shape: Tuple[int, int, int], n_actions: int):
+        super().__init__()
+        c, h, w = input_shape
+        self.conv = nn.Sequential(
+            nn.Conv2d(c, 32, kernel_size=8, stride=4),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1),
+            nn.ReLU()
+        )
+        conv_out_size = self._get_conv_out(input_shape)
+        self.fc = nn.Sequential(
+            nn.Linear(conv_out_size, 512),
+            nn.ReLU(),
+            nn.Linear(512, n_actions)
+        )
 
+    def _get_conv_out(self, shape):
+        o = self.conv(torch.zeros(1, *shape))
+        return int(np.prod(o.size()))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.fc(self.conv(x).view(x.size(0), -1))
+"""
+cells.append(create_cell("code", network_code.strip() + "\n\n" + std_network_code.strip()))
+
+# ===================== CELL 7: Agents =====================
+cells.append(create_cell("markdown", "## 6. C\u00e1c T\u00e1c t\u1eed (Agents)"))
 agent_code = read_file("src/agent.py")
 agent_code = re.sub(r'^.*?(?=class D3QNAgent)', '', agent_code, flags=re.DOTALL)
-cells.append(create_cell("code", agent_code.strip()))
+
+# Tích hợp BaselineAgent hỗ trợ Vanilla và Double DQN
+std_agent_code = """
+class BaselineAgent:
+    \"\"\"Agent hỗ trợ huấn luyện Vanilla DQN hoặc Double DQN.\"\"\"
+    def __init__(self, state_shape: Tuple[int, int, int], n_actions: int, config: dict, device: torch.device, is_double: bool = False):
+        self.n_actions = n_actions
+        self.device = device
+        self.gamma = config['agent']['gamma']
+        self.batch_size = config['agent']['batch_size']
+        self.target_update_freq = config['agent']['target_update_freq']
+        self.is_double = is_double
+
+        self.online_net = StandardDQN(state_shape, n_actions).to(device)
+        self.target_net = StandardDQN(state_shape, n_actions).to(device)
+        self.target_net.load_state_dict(self.online_net.state_dict())
+
+        self.optimizer = optim.Adam(self.online_net.parameters(), lr=config['agent']['lr'])
+        self.memory = StandardReplayBuffer(config['buffer']['capacity'])
+        self.step_count = 0
+
+    def get_action(self, state: np.ndarray, epsilon: float) -> int:
+        if random.random() < epsilon:
+            return random.randint(0, self.n_actions - 1)
+        state_t = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
+        with torch.no_grad():
+            return int(self.online_net(state_t).argmax(dim=1).item())
+
+    def train_step(self) -> float:
+        if len(self.memory) < self.batch_size:
+            return 0.0
+
+        states, actions, rewards, next_states, dones = self.memory.sample(self.batch_size)
+        states, actions = states.to(self.device), actions.to(self.device)
+        rewards, next_states, dones = rewards.to(self.device), next_states.to(self.device), dones.to(self.device)
+
+        q_values = self.online_net(states).gather(1, actions.unsqueeze(-1)).squeeze(-1)
+
+        with torch.no_grad():
+            if self.is_double:
+                # Double Target: Chọn hành động bằng Online, tính giá trị bằng Target
+                next_actions = self.online_net(next_states).argmax(dim=1, keepdim=True)
+                next_q = self.target_net(next_states).gather(1, next_actions).squeeze(-1)
+            else:
+                # Standard Target
+                next_q = self.target_net(next_states).max(dim=1)[0]
+            target_q = rewards + self.gamma * next_q * (1.0 - dones)
+
+        loss = F.mse_loss(q_values, target_q)
+        self.optimizer.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(self.online_net.parameters(), 10.0)
+        self.optimizer.step()
+
+        self.step_count += 1
+        if self.step_count % self.target_update_freq == 0:
+            self.target_net.load_state_dict(self.online_net.state_dict())
+
+        return float(loss.item())
+"""
+cells.append(create_cell("code", agent_code.strip() + "\n\n" + std_agent_code.strip()))
 
 # ===================== CELL 8: Logger =====================
-cells.append(create_cell("markdown", "## 7. Logger (phi\u00ean b\u1ea3n \u0111\u01a1n gi\u1ea3n cho Colab)"))
+cells.append(create_cell("markdown", "## 7. Tr\u00ecnh Ghi nh\u1eadt k\u00fd (Logger)"))
 cells.append(create_cell("code",
 "class RLLogger:\n"
 "    def __init__(self, log_dir='logs'):\n"
@@ -128,19 +246,11 @@ cells.append(create_cell("code",
 "        line = f'ep={ep}, reward={reward:.1f}, length={length}, eps={epsilon:.4f}'\n"
 "        self.f.write(line + '\\n')\n"
 "        self.f.flush()\n"
-"    def log_training_step(self, step, loss, mean_q, grad_norm):\n"
-"        pass\n"
-"    def log_buffer_stats(self, step, size, beta):\n"
-"        pass\n"
 "    def close(self):\n"
 "        self.f.close()"))
 
 # ===================== CELL 9: Config =====================
-cells.append(create_cell("markdown",
-"## 8. C\u1ea5u h\u00ecnh Hu\u1ea5n luy\u1ec7n\n"
-"Config n\u00e0y \u0111\u00e3 \u0111\u01b0\u1ee3c t\u1ed1i u\u01b0 cho Colab FREE tier (12GB RAM).\n"
-"Buffer uint8 + 30K capacity = ~1.6GB RAM. \u0110\u1ec3 train to\u00e0n b\u1ed9 300K steps m\u1ea5t kho\u1ea3ng 1-2 gi\u1edd."))
-
+cells.append(create_cell("markdown", "## 8. C\u1ea5u h\u00ecnh Si\u00eau tham s\u1ed1 (RAM Optimized)"))
 config_code = (
 "config = {\n"
 "    'env': {\n"
@@ -158,9 +268,8 @@ config_code = (
 "        'tau': 1.0,\n"
 "        'grad_clip': 10.0\n"
 "    },\n"
-"    # Buffer 30K uint8: chi ~1.6GB RAM (phu hop Colab FREE)\n"
 "    'buffer': {\n"
-"        'capacity': 30000,\n"
+"        'capacity': 30000,  # uint8 tối ưu RAM\n"
 "        'alpha': 0.6,\n"
 "        'beta_start': 0.4,\n"
 "        'beta_end': 1.0,\n"
@@ -174,7 +283,7 @@ config_code = (
 "        'decay_steps': 100000\n"
 "    },\n"
 "    'training': {\n"
-"        'total_timesteps': 300000,  # ~1-2 gio tren Colab T4\n"
+"        'total_timesteps': 300000,\n"
 "        'learning_starts': 10000,\n"
 "        'train_freq': 4,\n"
 "        'save_interval': 50000,\n"
@@ -185,208 +294,272 @@ config_code = (
 "        'log_dir': 'logs'\n"
 "    },\n"
 "    'seed': 42\n"
-"}\n\n"
-"print('Config da san sang!')\n"
-"print(f\"   Env: {config['env']['name']}\")\n"
-"print(f\"   Buffer: {config['buffer']['capacity']:,} transitions (uint8, ~1.6GB RAM)\")\n"
-"print(f\"   Total timesteps: {config['training']['total_timesteps']:,}\")"
+"}\n"
+"print('Config san sang!')"
 )
 cells.append(create_cell("code", config_code))
 
-# ===================== CELL 10: Train function =====================
-cells.append(create_cell("markdown",
-"## 9. V\u00f2ng l\u1eb7p Hu\u1ea5n luy\u1ec7n (Training Loop)\n"
-"\u0110\u00e2y l\u00e0 h\u00e0m `train()` ch\u00ednh. Ch\u1ea1y cell b\u00ean d\u01b0\u1edbi \u0111\u1ec3 b\u1eaft \u0111\u1ea7u hu\u1ea5n luy\u1ec7n."))
+# ===================== CELL 10: Unified Trainer =====================
+cells.append(create_cell("markdown", "## 9. H\u00e0m Hu\u1ea5n luy\u1ec7n H\u1ee3p nh\u1ea5t (Unified Trainer)\n"
+"H\u1ed7 tr\u1ee3 \u0111\u1ecbnh tuy\u1ebfn m\u00f4 h\u00ecnh linh ho\u1ea1t, \u0111\u1ea3m b\u1ea3o ph\u00e2n t\u00e1ch th\u01b0 mi\u1ec1n d\u1eef li\u1ec7u."))
 
-train_func = read_file("train.py")
-# Extract only the train() function (lines 60-198)
-match = re.search(r'(def train\(config.*?(?=\ndef main|\nif __name__))', train_func, re.DOTALL)
-if match:
-    train_body = match.group(1).strip()
-else:
-    train_body = "# ERROR: Could not extract train function"
-cells.append(create_cell("code", train_body))
+trainer_code = """
+def train_model(model_type: str, custom_log_dir: str, custom_ckpt_dir: str):
+    \"\"\"
+    Unified trainer for D3QN, Vanilla DQN and Double DQN.
 
-# ===================== CELL 11: Run training =====================
-cells.append(create_cell("markdown",
-"## 10. Hu\u1ea5n luy\u1ec7n ho\u1eb7c Load Checkpoint\n"
-"Ch\u1ecdn **Option A** (train m\u1edbi) ho\u1eb7c **Option B** (load file `.pt` \u0111\u00e3 c\u00f3) r\u1ed3i ch\u1ea1y cell t\u01b0\u01a1ng \u1ee9ng."))
+    D3QNAgent API  : select_action(state) | store_transition(...) | learn() | replay_buffer
+    BaselineAgent  : get_action(state, eps) | memory.add(...) | train_step() | memory
+    \"\"\"
+    print(f"\\n{'='*15} BAT DAU TRAIN: {model_type.upper()} {'='*15}")
+    set_global_seeds(config['seed'])
+    env = make_atari_env(
+        config['env']['name'],
+        seed=config['seed'],
+        clip_rewards=config['env']['clip_rewards'],
+        episodic_life=config['env']['episodic_life'],
+    )
 
-cells.append(create_cell("code",
-"# ========== OPTION A: Train m\u1edbi t\u1eeb \u0111\u1ea7u ==========\n"
-"# B\u1ecf comment 1 d\u00f2ng d\u01b0\u1edbi n\u1ebfu mu\u1ed1n train m\u1edbi\n"
-"# agent = train(config, device)\n\n"
-"# ========== OPTION B: Load checkpoint \u0111\u00e3 train s\u1eb5n ==========\n"
-"# Thay ten file checkpoint cho dung voi file cua ban\n"
-"CHECKPOINT = 'checkpoints/d3qn_ALE_Pong-v5_final.pt'\n\n"
-"import os, glob\n"
-"# Tu dong tim checkpoint moi nhat neu file khong ton tai\n"
-"if not os.path.exists(CHECKPOINT):\n"
-"    pts = sorted(glob.glob('checkpoints/*.pt'))\n"
-"    CHECKPOINT = pts[-1] if pts else None\n"
-"    print(f'Auto-found checkpoint: {CHECKPOINT}')\n\n"
-"if CHECKPOINT and os.path.exists(CHECKPOINT):\n"
-"    env_tmp = make_atari_env(config['env']['name'], seed=42, clip_rewards=False, episodic_life=False)\n"
-"    obs_shape = env_tmp.observation_space.shape\n"
-"    state_shape = (obs_shape[2], obs_shape[0], obs_shape[1])\n"
-"    n_actions = env_tmp.action_space.n\n"
-"    env_tmp.close()\n\n"
-"    agent = D3QNAgent(state_shape, n_actions, config, device)\n"
-"    agent.load_checkpoint(CHECKPOINT)\n"
-"    agent.online_net.eval()\n"
-"    print(f'Agent loaded from: {CHECKPOINT}')\n"
-"else:\n"
-"    print('Khong tim thay checkpoint! Hay chay Option A de train truoc.')"))
+    obs_shape   = env.observation_space.shape           # (H, W, C)
+    state_shape = (obs_shape[2], obs_shape[0], obs_shape[1])  # -> (C, H, W)
+    n_actions   = env.action_space.n
+
+    logger   = RLLogger(custom_log_dir)
+    ckpt_dir = Path(custom_ckpt_dir)
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
+    is_d3qn = (model_type == 'd3qn')
+    if is_d3qn:
+        agent = D3QNAgent(state_shape, n_actions, config, device)
+    else:
+        agent = BaselineAgent(state_shape, n_actions, config, device,
+                              is_double=(model_type == 'ddqn'))
+
+    eps_start     = config['epsilon']['start']
+    eps_end       = config['epsilon']['end']
+    eps_decay     = config['epsilon']['decay_steps']
+    total_steps   = config['training']['total_timesteps']
+    learn_start   = config['training']['learning_starts']
+    train_freq    = config['training']['train_freq']
+    save_interval = config['training']['save_interval']
+    log_interval  = config['training']['log_interval']
+    safe_env      = config['env']['name'].replace('/', '_')
+
+    state, _ = env.reset()
+    state     = preprocess_observation(state)
+    ep_reward, ep_len = 0.0, 0
+    ep_count  = 0
+    recent_rewards = deque(maxlen=100)
+
+    pbar = tqdm(total=total_steps, desc=f"[{model_type.upper()}]")
+
+    for step in range(1, total_steps + 1):
+        # Epsilon schedule cho Baseline (D3QN tự quản lý nội bộ)
+        epsilon = eps_end + (eps_start - eps_end) * max(0.0, 1.0 - step / eps_decay)
+
+        # --- Chọn hành động ---
+        if is_d3qn:
+            action = agent.select_action(state)         # D3QNAgent API
+        else:
+            action = agent.get_action(state, epsilon)   # BaselineAgent API
+
+        # --- Bước môi trường ---
+        next_obs, reward, terminated, truncated, _ = env.step(action)
+        next_state = preprocess_observation(next_obs)
+        done = terminated or truncated
+
+        # --- Lưu transition ---
+        if is_d3qn:
+            agent.store_transition(state, action, reward, next_state, done)  # -> replay_buffer
+        else:
+            agent.memory.add(state, action, reward, next_state, done)        # -> StandardReplayBuffer
+
+        state      = next_state
+        ep_reward += reward
+        ep_len    += 1
+
+        # --- Học ---
+        if step >= learn_start and step % train_freq == 0:
+            if is_d3qn:
+                agent.learn()       # xử lý cả target-network update nội bộ
+            else:
+                agent.train_step()
+
+        # --- Kết thúc episode ---
+        if done:
+            ep_count += 1
+            cur_eps = agent.current_epsilon if is_d3qn else epsilon
+            recent_rewards.append(ep_reward)
+            logger.log_episode(ep_count, ep_reward, ep_len, cur_eps)
+
+            if ep_count % log_interval == 0:
+                avg_r    = np.mean(recent_rewards)
+                buf_size = len(agent.replay_buffer) if is_d3qn else len(agent.memory)
+                pbar.write(f"[Ep {ep_count}] Avg R(100): {avg_r:.2f} | Eps: {cur_eps:.4f} | Buf: {buf_size} | Steps: {step}")
+
+            state, _ = env.reset()
+            state     = preprocess_observation(state)
+            ep_reward, ep_len = 0.0, 0
+
+        # --- Checkpoint định kỳ ---
+        if step % save_interval == 0:
+            pt_path = ckpt_dir / f"{model_type}_{safe_env}_{step}.pt"
+            if is_d3qn:
+                agent.save_checkpoint(str(pt_path))
+            else:
+                torch.save(agent.online_net.state_dict(), str(pt_path))
+            pbar.write(f"  [Checkpoint] Saved: {pt_path}")
+
+        pbar.update(1)
+
+    pbar.close()
+    logger.close()
+    env.close()
+
+    # --- Checkpoint cuối ---
+    final_path = ckpt_dir / f"{model_type}_{safe_env}_final.pt"
+    if is_d3qn:
+        agent.save_checkpoint(str(final_path))
+    else:
+        torch.save(agent.online_net.state_dict(), str(final_path))
+    print(f"  [*] Hoan tat! Final checkpoint: {final_path}")
+    return agent
+"""
+cells.append(create_cell("code", trainer_code.strip()))
+
+# ===================== CELL 11: Execute Pipelines =====================
+
+cells.append(create_cell("markdown", "## 10. K\u00edch ho\u1ea1t Hu\u1ea5n luy\u1ec7n Tu\u1ea7n t\u1ef1 (Overnight Execution)\n"
+"Cell n\u00e0y \u0111\u01b0\u1ee3c thi\u1ebft k\u1ebf \u0111\u1ec3 **treo m\u00e1y ch\u1ea1y qua \u0111\u00eam**. H\u1ec7 th\u1ed1ng s\u1ebd l\u1ea7n l\u01b0\u1ee3t train c\u1ea3 3 m\u00f4 h\u00ecnh v\u00e0 t\u1ef1 \u0111\u1ed9ng x\u00f3a b\u1ed9 nh\u1edb \u0111\u1ec7m gi\u1eefa c\u00e1c l\u1ea7n ch\u1ea1y \u0111\u1ec3 tr\u00e1nh tr\u00e0n RAM."))
+
+execute_code = """
+import gc
+import time
+
+# Danh sách cấu hình các mô hình cần chạy
+pipelines = [
+    {'type': 'd3qn', 'log': 'logs', 'ckpt': 'checkpoints'},
+    {'type': 'vanilla', 'log': 'logs/vanilla_dqn', 'ckpt': 'checkpoints/vanilla_dqn'},
+    {'type': 'ddqn', 'log': 'logs/double_dqn', 'ckpt': 'checkpoints/double_dqn'}
+]
+
+trained_agents = {}
+start_time_total = time.time()
+
+for pipe in pipelines:
+    m_type = pipe['type']
+    print(f"\\n>>> CHUẨN BỊ HUẤN LUYỆN: {m_type.upper()}")
+    
+    try:
+        # Kích hoạt tiến trình huấn luyện
+        agent = train_model(m_type, pipe['log'], pipe['ckpt'])
+        trained_agents[m_type] = agent
+        print(f"[OK] Huấn luyện thành công {m_type.upper()}")
+        
+    except Exception as e:
+        print(f"[LỖI NGIÊM TRỌNG] Quá trình train {m_type.upper()} thất bại: {e}")
+        print("Hệ thống sẽ bỏ qua và chạy tiếp mô hình tiếp theo để tránh lãng phí thời gian treo máy.")
+    
+    # --- CƠ CHẾ BẢO VỆ BỘ NHỚ (CRITICAL FOR OVERNIGHT TRAIN) ---
+    print(">>> Đang dọn dẹp bộ nhớ đệm (Garbage Collection)...")
+    # Xóa tham chiếu tạm thời để giải phóng Replay Buffer cũ
+    if 'agent' in locals():
+        del agent
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    time.sleep(2) # Nghỉ ngơi I/O
+
+hours, rem = divmod(time.time() - start_time_total, 3600)
+minutes, seconds = divmod(rem, 60)
+print(f"\\n{'='*40}\\n[HOÀN TẤT] Tổng thời gian treo máy: {int(hours)}h {int(minutes)}m {int(seconds)}s\\n{'='*40}")
+
+# Giữ lại D3QN agent chính trong scope để chạy Evaluation bên dưới
+if 'd3qn' in trained_agents:
+    d3qn_agent = trained_agents['d3qn']
+"""
+cells.append(create_cell("code", execute_code.strip()))
 
 # ===================== CELL 12: Evaluation =====================
-cells.append(create_cell("markdown",
-"## 11. \u0110\u00e1nh gi\u00e1 & Ghi h\u00ecnh Gameplay\n"
-"Agent m\u00e0u **xanh l\u00e1 (b\u00ean ph\u1ea3i)** l\u00e0 D3QN c\u1ee7a b\u1ea1n. \n"
-"Agent m\u00e0u **cam (b\u00ean tr\u00e1i)** l\u00e0 bot AI c\u1ee7a Atari.\n"
-"S\u1ed1 tr\u00ean m\u00e0n h\u00ecnh l\u00e0 t\u1ec9 s\u1ed1: `\u0110\u1ed1i th\u1ee7 | Agent`.\n"
-"Reward -19 = thua 19 \u0111i\u1ec3m t\u1ed5ng c\u1ed9ng. C\u1ea7n ~1-2M steps \u0111\u1ec3 agent b\u1eaft \u0111\u1ea7u th\u1eafng."))
-
+cells.append(create_cell("markdown", "## 11. \u0110\u00e1nh gi\u00e1 & Xu\u1ea5t Gameplay Video"))
 eval_func = read_file("eval.py")
-# Extract evaluate() and save_recording()
 match_eval = re.search(r'(def evaluate\(.*?)(def main\b|\nif __name__)', eval_func, re.DOTALL)
-if match_eval:
-    eval_body = match_eval.group(1).strip()
-else:
-    eval_body = "# ERROR: Could not extract evaluate function"
+eval_body = match_eval.group(1).strip() if match_eval else "# ERROR"
 cells.append(create_cell("code", eval_body))
 
 cells.append(create_cell("code",
-"# Chay evaluation va ghi hinh (5 episodes)\n"
-"rewards = evaluate(agent, config['env']['name'], n_episodes=5, seed=42, record_path='gameplay.mp4')\n\n"
-"# Hien thi video ngay trong Colab\n"
-"display(Video('gameplay.mp4', embed=True))"))
+"# Đánh giá D3QN Agent nếu có sẵn trong bộ nhớ\n"
+"if 'd3qn_agent' in locals():\n"
+"    rewards = evaluate(d3qn_agent, config['env']['name'], n_episodes=5, seed=42, record_path='gameplay.mp4')\n"
+"    display(Video('gameplay.mp4', embed=True))\n"
+"else:\n"
+"    print('D3QN Agent chưa được load hoặc train trong phiên này.')"))
 
-# Cell download checkpoint + video ve may
-cells.append(create_cell("markdown", "### \u2b07\ufe0f T\u1ea3i file v\u1ec1 m\u00e1y"))
-cells.append(create_cell("code",
-"from google.colab import files\n\n"
-"# Tai video gameplay\n"
-"if os.path.exists('gameplay.mp4'):\n"
-"    files.download('gameplay.mp4')\n\n"
-"# Tai checkpoint cuoi cung\n"
-"ckpts = sorted(glob.glob('checkpoints/*.pt'))\n"
-"if ckpts:\n"
-"    files.download(ckpts[-1])\n"
-"    print(f'Downloaded: {ckpts[-1]}')\n\n"
-"# Tai log training\n"
-"if os.path.exists('logs/training.log'):\n"
-"    files.download('logs/training.log')"))
-
-# ===================== CELL 13: Baseline section header =====================
-cells.append(create_cell("markdown",
-"---\n"
-"## Baseline Comparison: Vanilla DQN vs Double DQN\n"
-"Ch\u1ea1y 2 cell b\u00ean d\u01b0\u1edbi \u0111\u1ec3 hu\u1ea5n luy\u1ec7n c\u00e1c baseline v\u1edbi **c\u00f9ng b\u1ed9 siêu tham s\u1ed1** nh\u01b0 D3QN.\n"
-"K\u1ebft qu\u1ea3 s\u1ebd \u0111\u01b0\u1ee3c so s\u00e1nh trong cell cu\u1ed1i."))
-
-# ===================== CELL 14: Vanilla DQN code =====================
-cells.append(create_cell("markdown",
-"### Vanilla DQN Baseline\n"
-"Không có Dueling, không có PER — ch\u1ec9 dùng Replay Buffer ng\u1eabu nhiên."))
-
-dqn_code = read_file("compare/vanilla_dqn/train_dqn.py")
-# Xóa phần sys.path và from src import (sẽ dùng hàm đã define ở trên)
-dqn_code = re.sub(r'import sys\n', '', dqn_code)
-dqn_code = re.sub(r'import yaml\n', '', dqn_code)
-dqn_code = re.sub(r'import time\n', '', dqn_code)
-dqn_code = re.sub(r'import argparse\n', '', dqn_code)
-dqn_code = re.sub(r'sys\.path\.append.*\n', '', dqn_code)
-dqn_code = re.sub(r'from src\.\S+ import .*\n', '', dqn_code)
-dqn_code = re.sub(r'from src import .*\n', '', dqn_code)
-# Xóa hàm main() và if __name__
-dqn_code = re.sub(r'\nif __name__.*', '', dqn_code, flags=re.DOTALL)
-# Rename train() -> train_vanilla() de tranh conflict voi D3QN
-dqn_code = re.sub(r'^def train\(', 'def train_vanilla(', dqn_code, flags=re.MULTILINE)
-cells.append(create_cell("code", dqn_code.strip()))
-
-cells.append(create_cell("code",
-"# Chay Vanilla DQN baseline\n"
-"print('=== Training Vanilla DQN Baseline ===')\n"
-"vanilla_config = dict(config)  # Copy config tu D3QN\n"
-"vanilla_agent = train_vanilla(vanilla_config, device)"))
-
-# ===================== CELL 15: Double DQN code =====================
-cells.append(create_cell("markdown",
-"### Double DQN Baseline\n"
-"Thêm cơ chế Double target (chọn action bằng online, evaluate bằng target), v\u1eabn không có Dueling hay PER."))
-
-ddqn_code = read_file("compare/double_dqn/train_ddqn.py")
-ddqn_code = re.sub(r'import sys\n', '', ddqn_code)
-ddqn_code = re.sub(r'import yaml\n', '', ddqn_code)
-ddqn_code = re.sub(r'import time\n', '', ddqn_code)
-ddqn_code = re.sub(r'import argparse\n', '', ddqn_code)
-ddqn_code = re.sub(r'sys\.path\.append.*\n', '', ddqn_code)
-ddqn_code = re.sub(r'from src\.\S+ import .*\n', '', ddqn_code)
-ddqn_code = re.sub(r'from src import .*\n', '', ddqn_code)
-ddqn_code = re.sub(r'\nif __name__.*', '', ddqn_code, flags=re.DOTALL)
-# Rename train() -> train_double() de tranh conflict
-ddqn_code = re.sub(r'^def train\(', 'def train_double(', ddqn_code, flags=re.MULTILINE)
-cells.append(create_cell("code", ddqn_code.strip()))
-
-cells.append(create_cell("code",
-"# Chay Double DQN baseline\n"
-"print('=== Training Double DQN Baseline ===')\n"
-"double_config = dict(config)\n"
-"double_agent = train_double(double_config, device)"))
-
-# ===================== CELL 16: Plot =====================
-cells.append(create_cell("markdown", "## 12. Tr\u1ef1c quan h\u00f3a k\u1ebft qu\u1ea3"))
-
-# Dung triple-quote de tranh van de escape backslash trong regex
+# ===================== CELL 13: Plot =====================
+cells.append(create_cell("markdown", "## 12. T\u1ed5ng h\u1ee3p & So s\u00e1nh c\u00e1c \u0110\u01b0\u1eddng cong Hu\u1ea5n luy\u1ec7n"))
 plot_code = r"""import re as regex
 import os
+import matplotlib.pyplot as plt
+import numpy as np
 
-log_path = 'logs/training.log'
-if not os.path.exists(log_path):
-    print('Log chua co, hay train truoc!')
-else:
-    episodes_list, rewards_list = [], []
+def load_log_data(log_path):
+    episodes, rewards = [], []
+    if not os.path.exists(log_path):
+        return episodes, rewards
     with open(log_path, 'r') as f:
         for line in f:
             m = regex.search(r'ep=(\d+),\s*reward=([\-\d\.]+)', line)
             if m:
-                episodes_list.append(int(m.group(1)))
-                rewards_list.append(float(m.group(2)))
-    print(f'Total episodes parsed: {len(episodes_list)}')
-    if episodes_list:
-        plt.figure(figsize=(12, 5))
-        plt.plot(episodes_list, rewards_list, alpha=0.3, color='steelblue', label='Raw Reward')
-        window = min(50, len(rewards_list) // 2)
-        if window > 1:
-            smoothed = np.convolve(rewards_list, np.ones(window)/window, mode='valid')
-            plt.plot(range(window, len(rewards_list)+1), smoothed,
-                     color='red', linewidth=2, label=f'MA-{window}')
-        plt.xlabel('Episode')
-        plt.ylabel('Reward')
-        plt.title('D3QN Training Progress — ALE/Pong-v5')
-        plt.legend()
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        plt.savefig('training_curve.png', dpi=150)
-        plt.show()
+                episodes.append(int(m.group(1)))
+                rewards.append(float(m.group(2)))
+    return episodes, rewards
+
+logs = {
+    'Vanilla DQN': ('logs/vanilla_dqn/training.log', '#2ca02c'),
+    'Double DQN': ('logs/double_dqn/training.log', '#ff7f0e'),
+    'D3QN (Ours)': ('logs/training.log', '#1f77b4')
+}
+
+plt.figure(figsize=(12, 6))
+window = 50
+
+for label, (path, color) in logs.items():
+    eps, rews = load_log_data(path)
+    if not eps:
+        print(f"[*] Chưa có data cho {label}")
+        continue
+    
+    print(f"[*] {label}: load thành công {len(eps)} episodes.")
+    plt.plot(eps, rews, alpha=0.15, color=color)
+    if len(rews) >= window:
+        smoothed = np.convolve(rews, np.ones(window)/window, mode='valid')
+        plt.plot(eps[window-1:], smoothed, color=color, linewidth=2.5, label=f"{label} (MA-{window})")
     else:
-        print('Khong co episode nao duoc parse. Kiem tra lai dinh dang file log!')
+        plt.plot(eps, rews, color=color, linewidth=2, label=label)
+
+plt.xlabel('Episodes', fontsize=12)
+plt.ylabel('Average Reward', fontsize=12)
+plt.title('Performance Comparison: D3QN vs Baselines on ALE/Pong-v5', fontsize=14, fontweight='bold')
+plt.legend(fontsize=11, loc='lower right')
+plt.grid(True, alpha=0.3, linestyle='--')
+plt.tight_layout()
+plt.savefig('comparison_curve.png', dpi=300)
+plt.show()
 """
 cells.append(create_cell("code", plot_code.strip()))
 
-
-
-# ===================== Write + Validate =====================
+# ===================== Write Notebook =====================
 with open("HW4_D3QN.ipynb", "w", encoding="utf-8") as f:
     json.dump(notebook, f, indent=2, ensure_ascii=False)
 
-print("Done! Created HW4_D3QN.ipynb")
+print("Done! Created HW4_D3QN.ipynb (Unified Architecture)")
 print("Running validation...")
 
 import subprocess, sys
-result = subprocess.run([sys.executable, "validate_notebook.py"], capture_output=True, text=True)
+result = subprocess.run([sys.executable, "validate_notebook.py"], capture_output=True, text=True, encoding="utf-8", errors="replace")
 print(result.stdout)
 if result.returncode != 0:
     print("[VALIDATION FAILED]")
 else:
     print("[VALIDATION PASSED] Safe to upload to Colab!")
+

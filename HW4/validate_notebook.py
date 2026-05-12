@@ -10,10 +10,8 @@ import sys
 FULL_SKIP_PATTERNS = [
     "!pip", "!AutoROM",
     "subprocess.run(['AutoROM",
-    "agent = train(",
-    "vanilla_agent = train_vanilla(",
-    "double_agent = train_double(",
-    "rewards = evaluate(",
+    "train_model(",
+    "evaluate(",
     "display(Video(",
     "gym.make(",
     "make_atari_env(",
