@@ -8,6 +8,9 @@ Reference:
     Schaul, T., et al. (2016). "Prioritized Experience Replay." ICLR 2016.
 """
 
+# PER + sumtree
+# 
+
 import numpy as np
 from typing import Tuple, Optional
 from dataclasses import dataclass

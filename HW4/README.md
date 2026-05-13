@@ -81,7 +81,7 @@ python plot_baselines.py
 ```
 Then, launch the UI:
 ```bash
-streamlit run app.py
+streamlit run app.py --server.headless true
 ```
 
 ## ⚙️ Key Hyperparameters

@@ -11,6 +11,8 @@ D3QN Agent combining:
        more frequently (Schaul et al., 2016).
 """
 
+# Double DQN
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -114,6 +116,8 @@ class D3QNAgent:
         self.replay_buffer.add(state, action, reward, next_state, done)
 
     def learn(self) -> Dict[str, float]:
+        # dùng mạng online network để chọn hành động, 
+        # dùng mạng target network để tính Q-value
         """
         Perform one gradient step using Double DQN with PER.
         

@@ -66,6 +66,7 @@ class DuelingDQN(nn.Module):
         
         # === Value Stream V(s) ===
         # Outputs a single scalar: the state value
+        # hàm V(s): ước lượng giá trị của trạng thái hiện tại
         self.value_stream = nn.Sequential(
             nn.Linear(self._feature_size, 512),
             nn.ReLU(inplace=True),
@@ -74,6 +75,7 @@ class DuelingDQN(nn.Module):
         
         # === Advantage Stream A(s, a) ===
         # Outputs one value per action: the advantage of each action
+        # hàm A(s,a): ước lượng lợi thế của từng hành động
         self.advantage_stream = nn.Sequential(
             nn.Linear(self._feature_size, 512),
             nn.ReLU(inplace=True),

@@ -25,6 +25,7 @@ import random
 from typing import Optional, Tuple, Any, SupportsFloat
 from collections import deque
 
+# xử lí ảnh: stack frame, resize, grayscale, clip reward, ...
 
 # ==============================================================================
 # Reproducibility
