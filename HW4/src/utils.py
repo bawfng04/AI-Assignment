@@ -1,21 +1,10 @@
 # ==============================================================================
 # HW4 — DeepMind Atari Environment Wrappers & Utilities
 # ==============================================================================
-"""
-Standard Atari preprocessing wrappers following DeepMind's protocol.
-
-Reference:
-    Mnih, V., et al. (2015). "Human-level control through deep RL." Nature.
-
-Wrappers applied (in order):
-    1. NoopResetEnv     — Random no-ops at episode start
-    2. MaxAndSkipEnv    — Frame skipping with max-pooling
-    3. EpisodicLifeEnv  — Treat life loss as episode boundary (training only)
-    4. FireResetEnv     — Press FIRE to start after reset
-    5. WarpFrame        — Grayscale + resize to 84x84
-    6. ClipRewardEnv    — Clip rewards to {-1, 0, +1}
-    7. FrameStackEnv    — Stack last N frames as channels
-"""
+# file này chứa các lớp bọc (wrappers) để tiền xử lý môi trường atari pong theo đúng chuẩn của deepmind.
+# mục đích: biến game gốc (ảnh màu, chạy nhanh, điểm số ngẫu nhiên) thành dạng dữ liệu chuẩn hóa
+# giúp mạng nơ-ron dễ đọc và học nhanh hơn.
+# thứ tự áp dụng: noop -> skip frame -> episodic life -> fire reset -> warp (xám/resize) -> clip reward -> stack frame.
 
 import gymnasium as gym
 import numpy as np
@@ -25,14 +14,9 @@ import random
 from typing import Optional, Tuple, Any, SupportsFloat
 from collections import deque
 
-# xử lí ảnh: stack frame, resize, grayscale, clip reward, ...
-
-# ==============================================================================
-# Reproducibility
-# ==============================================================================
 
 def set_global_seeds(seed: int) -> None:
-    """Set seeds for torch, numpy, random, and CUDA for reproducibility."""
+    # cố định seed cho tất cả các thư viện để đảm bảo code chạy lại ra kết quả giống nhau (reproducibility)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
@@ -46,7 +30,8 @@ def set_global_seeds(seed: int) -> None:
 # ==============================================================================
 
 class NoopResetEnv(gym.Wrapper):
-    """Sample random no-ops on reset for stochastic initial states."""
+    # lớp 1: khi mới vào game, đứng im (noop) một số bước ngẫu nhiên.
+    # việc này giúp ván game bắt đầu ở các trạng thái đa dạng, tránh việc ai học vẹt một kịch bản cố định.
 
     def __init__(self, env: gym.Env, noop_max: int = 30) -> None:
         super().__init__(env)
@@ -65,7 +50,8 @@ class NoopResetEnv(gym.Wrapper):
 
 
 class MaxAndSkipEnv(gym.Wrapper):
-    """Return max-pooled obs over last 2 of every `skip` frames."""
+    # lớp 2: nhảy cóc khung hình (frame skipping). thay vì xử lý từng frame (game chạy 60fps rất thừa thãi),
+    # ta gom 4 frame làm 1 bước, lấy max pixel của 2 frame cuối để tránh bị nhấp nháy hình ảnh.
 
     def __init__(self, env: gym.Env, skip: int = 4) -> None:
         super().__init__(env)
@@ -91,7 +77,8 @@ class MaxAndSkipEnv(gym.Wrapper):
 
 
 class EpisodicLifeEnv(gym.Wrapper):
-    """Make end-of-life == end-of-episode (training only)."""
+    # lớp 3: cứ mất 1 mạng (life) là coi như thua luôn ván đó (chỉ áp dụng lúc train).
+    # giúp ai hiểu ngay hành động sai lầm dẫn đến mất mạng để né tránh kịp thời.
 
     def __init__(self, env: gym.Env) -> None:
         super().__init__(env)
@@ -117,7 +104,7 @@ class EpisodicLifeEnv(gym.Wrapper):
 
 
 class FireResetEnv(gym.Wrapper):
-    """Press FIRE at reset for environments that require it."""
+    # lớp 4: tự động bấm nút bắn (fire) lúc mới vào để game bắt đầu thả bóng.
 
     def __init__(self, env: gym.Env) -> None:
         super().__init__(env)
@@ -136,7 +123,8 @@ class FireResetEnv(gym.Wrapper):
 
 
 class WarpFrame(gym.ObservationWrapper):
-    """Convert to grayscale and resize to 84x84."""
+    # lớp 5: chuyển ảnh màu sang đen trắng (grayscale) và bóp kích thước về 84x84 pixel.
+    # việc này giúp giảm triệt để khối lượng tính toán cho cnn.
 
     def __init__(self, env: gym.Env, width: int = 84, height: int = 84) -> None:
         super().__init__(env)
@@ -154,14 +142,17 @@ class WarpFrame(gym.ObservationWrapper):
 
 
 class ClipRewardEnv(gym.RewardWrapper):
-    """Clip rewards to {-1, 0, +1} using np.sign."""
+    # lớp 6: kìm hãm phần thưởng về dải -1 (thua), 0 (hòa), 1 (thắng).
+    # giúp mạng ổn định, không bị sốc khi chuyển sang các game có thang điểm số lớn.
 
     def reward(self, reward: SupportsFloat) -> float:
         return float(np.sign(float(reward)))
 
 
 class FrameStackEnv(gym.Wrapper):
-    """Stack the last `n_frames` as observation channels."""
+    # lớp 7: chập 4 khung hình liên tiếp nhau thành 1 mảng đa kênh (channel).
+    # nếu chỉ nhìn 1 ảnh tĩnh, ai không thể biết quả bóng đang bay sang trái hay phải.
+    # chập 4 ảnh giúp mạng cnn nhận thức được hướng đi và vận tốc của vệt bóng.
 
     def __init__(self, env: gym.Env, n_frames: int = 4) -> None:
         super().__init__(env)
@@ -202,20 +193,7 @@ def make_atari_env(
     episodic_life: bool = True,
     render_mode: Optional[str] = None,
 ) -> gym.Env:
-    """
-    Create a fully-wrapped Atari environment following DeepMind's protocol.
-    
-    Args:
-        env_name:      Gymnasium Atari environment ID.
-        seed:          Random seed for the environment.
-        frame_stack:   Number of frames to stack.
-        clip_rewards:  Whether to clip rewards to {-1, 0, +1}.
-        episodic_life: Whether to treat life loss as episode end.
-        render_mode:   Gymnasium render mode (None, 'human', 'rgb_array').
-    
-    Returns:
-        Fully wrapped Gymnasium environment.
-    """
+    # hàm xưởng (factory function): gộp tuần tự 7 lớp wrapper ở trên để bọc lại môi trường gốc
     env = gym.make(env_name, render_mode=render_mode)
     env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=4)
@@ -232,6 +210,7 @@ def make_atari_env(
 
 
 def preprocess_observation(obs: np.ndarray) -> np.ndarray:
-    """Convert HWC uint8 obs to CHW float32 in [0, 1]."""
+    # hàm phụ trợ: đổi vị trí các chiều từ dạng (chiều cao, chiều rộng, số kênh) của ảnh
+    # sang dạng chuẩn (số kênh, chiều cao, chiều rộng) của pytorch, đồng thời chia 255.
     obs = np.array(obs, dtype=np.float32) / 255.0
     return np.transpose(obs, (2, 0, 1))  # HWC -> CHW

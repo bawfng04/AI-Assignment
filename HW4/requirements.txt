@@ -27,3 +27,6 @@ imageio-ffmpeg>=0.4.9
 
 # Utilities
 tqdm>=4.66.0
+
+# Interactive Gameplay Demo
+pygame>=2.5.0

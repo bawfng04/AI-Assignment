@@ -1,3 +1,9 @@
+# file này dùng để huấn luyện mô hình double dqn (ddqn) độc lập nhằm mục đích so sánh với d3qn.
+# ddqn ở đây bị tước bỏ 2 vũ khí:
+# 1. không dùng bộ nhớ per (chỉ dùng deque ngẫu nhiên bình thường).
+# 2. không dùng kiến trúc dueling (chỉ dùng cnn nối thẳng ra q-value).
+# điểm giữ lại duy nhất: thuật toán double dqn (tách biệt chọn hành động và chấm điểm).
+
 import sys
 import os
 import argparse
@@ -21,6 +27,7 @@ from src.logger import RLLogger
 # 1. Standard Replay Buffer (No PER)
 # ==========================================================
 class StandardReplayBuffer:
+    # bộ nhớ hàng đợi đơn giản (fifo), ván mới đè ván cũ, bốc mẫu ngẫu nhiên không ưu tiên
     def __init__(self, capacity):
         self.capacity = capacity
         self.buffer = collections.deque(maxlen=capacity)
@@ -41,6 +48,7 @@ class StandardReplayBuffer:
 # 2. Vanilla DQN Network (No Dueling)
 # ==========================================================
 class VanillaDQNNetwork(nn.Module):
+    # mạng cnn thường: trích xuất đặc trưng rồi đẩy qua 2 lớp dense thẳng ra q-value
     def __init__(self, input_shape, n_actions):
         super().__init__()
         self.features = nn.Sequential(
@@ -76,6 +84,7 @@ class VanillaDQNNetwork(nn.Module):
 # 3. Double DQN Agent
 # ==========================================================
 class DoubleDQNAgent:
+    # tác nhân áp dụng công thức double dqn (tách mạng online chọn hành động, mạng target tính điểm)
     def __init__(self, state_shape, n_actions, config, device):
         self.n_actions = n_actions
         self.device = device
@@ -127,11 +136,11 @@ class DoubleDQNAgent:
         next_states_t = torch.tensor(next_states, dtype=torch.float32, device=self.device)
         dones_t = torch.tensor(dones, dtype=torch.float32, device=self.device)
 
-        # Q(s, a)
+        # q-value thực tế
         current_q = self.online_net(states_t).gather(1, actions_t).squeeze(1)
         mean_q = float(current_q.mean().item())
 
-        # Target: r + gamma * Q_target(s', argmax Q_online(s', a'))
+        # công thức double dqn: q_target(s', argmax q_online(s', a'))
         with torch.no_grad():
             best_actions = self.online_net(next_states_t).argmax(dim=1, keepdim=True)
             next_q = self.target_net(next_states_t).gather(1, best_actions).squeeze(1)

@@ -84,6 +84,13 @@ Then, launch the UI:
 streamlit run app.py --server.headless true
 ```
 
+Play vs AI:
+```bash
+pip install pygame
+python play_vs_ai.py --ckpt checkpoints/d3qn_pong_model.pt
+```
+
+
 ## ⚙️ Key Hyperparameters
 | Parameter | Default | Description |
 |---|---|---|

@@ -1,3 +1,9 @@
+# file này huấn luyện mô hình dqn cổ điển (vanilla dqn) nguyên thủy nhất để làm mốc so sánh (baseline).
+# mô hình này hoàn toàn thô sơ:
+# 1. dùng bộ nhớ thường (fifo deque).
+# 2. dùng mạng cnn thẳng ra q-value (không dueling).
+# 3. công thức cập nhật gốc: lấy trực tiếp max q từ mạng target (rất dễ bị ảo tưởng sức mạnh - overestimation bias).
+
 import sys
 import os
 import argparse
@@ -22,6 +28,7 @@ from src.logger import RLLogger
 # 1. Standard Replay Buffer (No PER)
 # ==========================================================
 class StandardReplayBuffer:
+    # hàng đợi lưu trữ cơ bản, không có cơ chế chấm điểm ưu tiên
     def __init__(self, capacity):
         self.capacity = capacity
         self.buffer = collections.deque(maxlen=capacity)
@@ -42,6 +49,7 @@ class StandardReplayBuffer:
 # 2. Vanilla DQN Network (No Dueling)
 # ==========================================================
 class VanillaDQNNetwork(nn.Module):
+    # mạng dqn tiêu chuẩn: cnn -> flatten -> linear -> q-values
     def __init__(self, input_shape, n_actions):
         super().__init__()
         self.features = nn.Sequential(
@@ -78,6 +86,7 @@ class VanillaDQNNetwork(nn.Module):
 # 3. Vanilla DQN Agent
 # ==========================================================
 class VanillaDQNAgent:
+    # tác nhân dqn nguyên thủy cập nhật theo thuật toán q-learning sâu gốc
     def __init__(self, state_shape, n_actions, config, device):
         self.n_actions = n_actions
         self.device = device
@@ -133,7 +142,8 @@ class VanillaDQNAgent:
         current_q = self.online_net(states_t).gather(1, actions_t).squeeze(1)
         mean_q = float(current_q.mean().item())
 
-        # Target: r + gamma * max Q(s', a')
+        # công thức nguyên thủy: lấy thẳng giá trị lớn nhất từ mạng target
+        # (chính kẽ hở này gây ra hiện tượng thiên lệch tích lũy, định giá sai lệch)
         with torch.no_grad():
             max_next_q = self.target_net(next_states_t).max(1)[0]
             td_target = rewards_t + self.gamma * max_next_q * (1.0 - dones_t)
