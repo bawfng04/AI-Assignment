@@ -338,7 +338,7 @@ elif page == "📊 Training Analytics":
             font=dict(size=11),
         ),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig)
 
     # ── STATISTICS TABLE ──
     st.markdown('<div class="section-header">📋 Thống kê Tổng hợp</div>', unsafe_allow_html=True)
@@ -414,7 +414,7 @@ elif page == "⚔️ So sánh 3 Models":
             font=dict(size=12),
         ),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig)
 
     # ── COMPARISON TABLE ──
     if model_stats:
@@ -469,9 +469,25 @@ elif page == "🕹️ Gameplay Demo":
     video_files = [f for f in ["video.mp4", "gameplay.mp4", "assets/gameplay.mp4"] if os.path.exists(f)]
     
     if video_files:
+        import base64
         for vf in video_files:
-            st.video(vf)
-            st.caption(f"📹 Nguồn: `{vf}`")
+            with open(vf, "rb") as f:
+                video_bytes = f.read()
+            b64_video = base64.b64encode(video_bytes).decode()
+            
+            # Khóa chặt chiều cao tối đa (max-height: 400px), tự động căn giữa mượt mà
+            st.markdown(
+                f"""
+                <div style="display: flex; justify-content: center; margin: 20px 0;">
+                    <video controls autoplay loop muted style="max-height: 400px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border: 1px solid #e2e8f0;">
+                        <source src="data:video/mp4;base64,{b64_video}" type="video/mp4">
+                        Trình duyệt của bạn không hỗ trợ thẻ video.
+                    </video>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.caption(f"📹 Nguồn video nhúng: `{vf}`")
     else:
         st.warning(
             "⚠️ Chưa có video gameplay. Hãy chạy evaluation trên Colab:\n"
