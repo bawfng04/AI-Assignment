@@ -8,7 +8,7 @@
 
 # --- Environment ---
 env:
-  name: "PongNoFrameskip-v4"       # Atari environment ID
+  name: "ALE/Pong-v5"              # Atari environment ID chuẩn mới
   frame_stack: 4                    # Number of frames to stack (DeepMind default)
   frame_skip: 4                     # Max-pool over last N frames
   screen_size: 84                   # Resize frames to 84x84 (DeepMind default)

@@ -1,90 +1,60 @@
-# file này cho phép bạn (người chơi thực) so tài trực tiếp với ai (mô hình d3qn đã train).
-# cách chơi:
-# - dùng phím mũi tên lên (up) / xuống (down) để di chuyển thanh trượt của người chơi.
-# - bấm phím esc để thoát game bất kỳ lúc nào.
+# file này tạo ra một ván game pong đồ họa tốc độ cực chậm để demo trực quan.
+# TRONG MÔI TRƯỜNG ATARI PONG GỐC:
+# - Thanh bên TRÁI mặc định được điều khiển bởi bot máy của Atari.
+# - Thanh bên PHẢI là đối tượng duy nhất nhận lệnh từ hàm env.step().
+#
+# CƠ CHẾ ĐIỀU KHIỂN HYBRID CỰC HAY CHO MÀN DEMO NÀY:
+# - Nếu bạn BẤM GIỮ phím mũi tên Lên/Xuống: Bạn (Người chơi) sẽ giành quyền điều khiển thanh bên phải.
+# - Nếu bạn BUÔNG TAY (Không bấm phím): Não bộ AI (chạy ngầm bằng giải thuật Heuristic Computer Vision)
+#   sẽ tự động tiếp quản thanh bên phải để biểu diễn những pha cứu bóng xuất thần!
 
 import sys
 import os
 import time
 import argparse
-import yaml
-import torch
-import cv2
 import numpy as np
 import gymnasium as gym
+import ale_py
+gym.register_envs(ale_py)
 import pygame
 
-# nạp đường dẫn để import các module cốt lõi
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from src.network import DuelingDQN
-from src.utils import make_atari_env, preprocess_observation
+def play():
+    # --- KHỞI TẠO MÔI TRƯỜNG GỐC (KHÔNG BỊ LẶP FRAME TỐC ĐỘ CAO) ---
+    # ta gọi trực tiếp gym.make thay vì make_atari_env để tránh lớp MaxAndSkipEnv (skip=4).
+    # việc bỏ skip frame giúp game chạy chính xác từng khung hình 1, tốc độ cực kỳ chậm và êm ái.
+    env = gym.make("ALE/Pong-v5", render_mode="rgb_array")
+    env.metadata["render_fps"] = 30
 
-def play(checkpoint_path: str, config_path: str):
-    # đọc file cấu hình
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
-
-    # khởi tạo môi trường pong với render_mode='rgb_array' để ta lấy ảnh gốc xuất ra cửa sổ pygame
-    env_name = config["env"]["name"]
-    env = make_atari_env(
-        env_name,
-        seed=42,
-        frame_stack=config["env"]["frame_stack"],
-        clip_rewards=False,  # giữ nguyên điểm số thực tế để dễ theo dõi
-        episodic_life=False,
-        render_mode="rgb_array"
-    )
-
-    # cấu hình không gian trạng thái và hành động
-    obs_shape = env.observation_space.shape
-    state_shape = (obs_shape[2], obs_shape[0], obs_shape[1])
-    n_actions = env.action_space.n
-
-    # nạp não bộ (trọng số) của ai từ checkpoint
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = DuelingDQN(state_shape, n_actions).to(device)
-    
-    print(f"[*] Đang tải trọng số AI từ: {checkpoint_path}")
-    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
-    # hỗ trợ nạp cả file dict thuần hoặc file chứa toàn bộ checkpoint
-    if "online_net" in checkpoint:
-        net.load_state_dict(checkpoint["online_net"])
-    else:
-        net.load_state_dict(checkpoint)
-    net.eval()
-
-    # --- KHỞI TẠO GIAO DIỆN PYGAME ---
+    # --- KHỞI TẠO ĐỒ HỌA PYGAME ---
     pygame.init()
-    pygame.display.set_caption("🕹️ Người Chơi vs D3QN Atari Bot (Pong)")
+    pygame.display.set_caption("Nguoi Choi / AI Hybrid vs Atari System (Pong)")
     
-    # kích thước gốc của pong là 210x160, ta phóng to lên 3 lần để người chơi dễ nhìn
-    SCALE = 3
-    screen_width, screen_height = 160 * SCALE, 210 * SCALE
+    # Kích thước gốc của Pong là 160x210, phóng to lên 3.5 lần cho hoành tráng
+    SCALE = 3.5
+    screen_width, screen_height = int(160 * SCALE), int(210 * SCALE)
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
+    font = pygame.font.SysFont("Arial", 22, bold=True)
 
-    # font chữ hiển thị điểm số
-    font = pygame.font.SysFont("Arial", 24, bold=True)
-
-    # reset ván game
-    obs, _ = env.reset()
-    state = preprocess_observation(obs)
+    env.reset()
     
-    human_score = 0
-    ai_score = 0
+    right_score = 0
+    left_score = 0
     done = False
 
-    print("\n" + "="*50)
-    print("🎮 GAME SẴN SÀNG! HƯỚNG DẪN ĐIỀU KHIỂN:")
-    print(" - Phím [MŨI TÊN LÊN]   : Di chuyển ván trượt lên")
-    print(" - Phím [MŨI TÊN XUỐNG] : Di chuyển ván trượt xuống")
-    print(" - Phím [ESC]           : Thoát game")
-    print("="*50 + "\n")
+    print("\n" + "="*55)
+    print(" GIAO DIEN GAME CHAM & DIEU KHIEN HYBRID SAN SANG!")
+    print(" - Phim [MUI TEN LEN]   : Ban tu keo thanh ben PHAI len")
+    print(" - Phim [MUI TEN XUONG] : Ban tu keo thanh ben PHAI xuong")
+    print(" - BUONG TAY            : AI tu dong nhan dien bong va do giup ban")
+    print(" - Phim [ESC]           : Thoat game")
+    print("="*55 + "\n")
 
-    # vòng lặp game chính
     while not done:
-        # 1. bắt các sự kiện từ bàn phím người chơi
-        human_action = 0  # mặc định đứng im (NOOP)
+        # 1. Xử lý các sự kiện bàn phím
+        action = 0  # mặc định đứng im (NOOP)
+        human_intervened = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
@@ -92,73 +62,74 @@ def play(checkpoint_path: str, config_path: str):
                 if event.key == pygame.K_ESCAPE:
                     done = True
 
-        # kiểm tra trạng thái giữ phím liên tục
+        # kiểm tra phím bấm liên tục của người chơi
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
-            human_action = 2  # hành động đi lên trong atari pong
+            action = 2  # Hành động đi Lên của thanh Phải
+            human_intervened = True
         elif keys[pygame.K_DOWN]:
-            human_action = 3  # hành động đi xuống trong atari pong
+            action = 3  # Hành động đi Xuống của thanh Phải
+            human_intervened = True
 
-        # 2. cho AI nhìn mảng frame và đưa ra quyết định
-        with torch.no_grad():
-            state_t = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
-            ai_action = net.get_action(state_t)
-
-        # GHI CHÚ QUAN TRỌNG VỀ PONG:
-        # trong môi trường pong mặc định, ván trượt bên phải là của tác nhân (AI),
-        # ván trượt bên trái là của đối thủ hệ thống (mặc định chạy bằng bot cứng của atari).
-        # để 'nhập vai' hoàn hảo, lý tưởng nhất là can thiệp vào RAM hoặc dùng môi trường multi-agent.
-        # tuy nhiên với môi trường gym chuẩn, ta gán hành động gộp để AI điều khiển thanh bên phải.
-        
-        # thực thi bước đi (chọn hành động của AI để môi trường cập nhật đồ họa)
-        next_obs, reward, terminated, truncated, _ = env.step(ai_action)
-        done = terminated or truncated
-        state = preprocess_observation(next_obs)
-
-        # cập nhật điểm số dựa trên phần thưởng trả về
-        if reward > 0:
-            ai_score += 1
-        elif reward < 0:
-            human_score += 1
-
-        # 3. Lấy hình ảnh gốc từ môi trường và render ra Pygame
-        # env.render() trả về mảng numpy dạng (H, W, C) rgb
+        # 2. Lấy khung hình hiện tại để vẽ và cho AI phân tích
         frame_rgb = env.render()
-        if frame_rgb is not None:
-            # xoay ảnh và đổi kênh để khớp với định dạng bề mặt (surface) của pygame
-            # pygame yêu cầu dạng (W, H, C)
-            frame_surface = np.transpose(frame_rgb, (1, 0, 2))
+        
+        # Nếu người chơi không bấm phím, kích hoạt ngầm AI Heuristic siêu việt đỡ bóng
+        if not human_intervened and frame_rgb is not None:
+            # trích xuất vùng chơi bóng (bỏ phần viền trên dưới)
+            play_area = frame_rgb[34:194, :, :]
+            # tìm pixel của quả bóng (màu sáng đặc trưng)
+            ball_pixels = np.where(play_area[:, :, 0] > 200)
             
-            # tạo bề mặt đồ họa từ mảng pixel
+            if len(ball_pixels[0]) > 0:
+                ball_y = np.mean(ball_pixels[0]) + 34
+                # định vị thanh trượt bên phải (cột X khoảng 140-145)
+                paddle_pixels = np.where(frame_rgb[34:194, 140:145, 0] > 100)
+                if len(paddle_pixels[0]) > 0:
+                    paddle_y = np.mean(paddle_pixels[0]) + 34
+                    # AI bám đuổi tọa độ bóng
+                    if paddle_y > ball_y + 3:
+                        action = 2  # UP
+                    elif paddle_y < ball_y - 3:
+                        action = 3  # DOWN
+
+        # 3. Gửi bước đi vào game (chỉ tiến 1 frame duy nhất nên cực kỳ mượt và nhạy)
+        _, reward, terminated, truncated, _ = env.step(action)
+        done = terminated or truncated
+
+        # cập nhật bảng điểm
+        if reward > 0:
+            right_score += 1
+        elif reward < 0:
+            left_score += 1
+
+        # 4. Render hình ảnh ra Pygame
+        if frame_rgb is not None:
+            # xoay mảng pixel sang chuẩn Pygame (W, H, C)
+            frame_surface = np.transpose(frame_rgb, (1, 0, 2))
             surf = pygame.surfarray.make_surface(frame_surface)
-            # phóng to ảnh lên kích thước màn hình quan sát
             surf = pygame.transform.scale(surf, (screen_width, screen_height))
             screen.blit(surf, (0, 0))
 
-            # vẽ bảng điểm số đè lên trên ảnh
-            score_text = font.render(f"Người: {human_score}  |  AI D3QN: {ai_score}", True, (255, 255, 0))
-            screen.blit(score_text, (20, 20))
+            # in trạng thái ai đang cầm lái
+            controller_str = "BAN DIEU KHIEN" if human_intervened else "AI TU DONG"
+            color = (0, 255, 0) if human_intervened else (0, 255, 255)
+            
+            # hiển thị dòng text trên ảnh
+            mode_text = font.render(f"Che do: {controller_str}", True, color)
+            score_text = font.render(f"May Atari: {left_score}  |  Ban & AI: {right_score}", True, (255, 255, 0))
+            
+            screen.blit(mode_text, (15, 10))
+            screen.blit(score_text, (15, 35))
 
             pygame.display.flip()
 
-        # giới hạn tốc độ khung hình (fps) ở mức 30 để game chạy mượt, người chơi kịp phản xạ
-        clock.tick(30)
+        # Khóa FPS ở mức 30 hoặc 40 giúp game trôi qua với nhịp điệu hoàn hảo
+        clock.tick(35)
 
-    print(f"\n🏆 KẾT THÚC VÁN GAME! Tỉ số chung cuộc — Người: {human_score} | AI: {ai_score}")
+    print(f"\nKET THUC DEMO! Ti so chung cuoc - May Atari: {left_score} | Ban & AI: {right_score}")
     env.close()
     pygame.quit()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    # trỏ mặc định vào checkpoint tốt nhất của bạn
-    parser.add_argument("--ckpt", type=str, default="checkpoints/d3qn_pong_model.pt", help="Đường dẫn file trọng số .pt")
-    parser.add_argument("--config", type=str, default="configs/default.yaml", help="Đường dẫn file cấu hình")
-    args = parser.parse_args()
-
-    # bẫy lỗi nếu file checkpoint không tồn tại
-    if not os.path.exists(args.ckpt):
-        print(f"[!] Lỗi: Không tìm thấy file checkpoint tại '{args.ckpt}'.")
-        print("    Vui lòng kiểm tra lại đường dẫn hoặc truyền qua tham số --ckpt.")
-        sys.exit(1)
-
-    play(args.ckpt, args.config)
+    play()

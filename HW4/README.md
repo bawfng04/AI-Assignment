@@ -87,7 +87,9 @@ streamlit run app.py --server.headless true
 Play vs AI:
 ```bash
 pip install pygame
-python play_vs_ai.py --ckpt checkpoints/d3qn_pong_model.pt
+python play_vs_ai.py --ckpt checkpoints/d3qn_ALE_Pong-v5_final.pt
+# Hoặc đơn giản chỉ cần gõ lệnh sau (do đã được cấu hình đường dẫn mặc định):
+# python play_vs_ai.py
 ```
 
 

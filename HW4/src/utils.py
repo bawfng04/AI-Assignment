@@ -7,6 +7,8 @@
 # thứ tự áp dụng: noop -> skip frame -> episodic life -> fire reset -> warp (xám/resize) -> clip reward -> stack frame.
 
 import gymnasium as gym
+import ale_py
+gym.register_envs(ale_py)
 import numpy as np
 import cv2
 import torch
