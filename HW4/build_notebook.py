@@ -73,7 +73,7 @@ cells.append(create_cell("code",
 "from collections import deque\n"
 "from dataclasses import dataclass\n"
 "from pathlib import Path\n"
-"from typing import Optional, Tuple, Any, Dict, List\n"
+"from typing import Optional, Tuple, Any, Dict, List, SupportsFloat\n"
 "from tqdm.notebook import tqdm\n"
 "from IPython.display import Video, display\n\n"
 "# Dang ky namespace ALE voi Gymnasium v1.x\n"
