@@ -47,7 +47,9 @@ class SumTree:
         self.tree[parent] += delta
         if parent != 0:
             self._propagate(parent, delta)
-
+    # 
+    # 
+    # 
     def _retrieve(self, idx: int, value: float) -> int:
         # hàm đệ quy đi từ gốc xuống lá để tìm index của sample tương ứng với giá trị ngẫu nhiên value
         left = 2 * idx + 1
@@ -160,6 +162,7 @@ class PrioritizedReplayBuffer:
         # tính toán trọng số hiệu chỉnh is_weights
         priorities_arr = np.array(priorities, dtype=np.float64)
         sampling_probs = np.maximum(priorities_arr / self.tree.total_priority, 1e-10)
+        # công thức: (1/n*p)^(-beta)
         is_weights = (len(self) * sampling_probs) ** (-self.beta)
         # chuẩn hóa trọng số theo max để giữ cho gradient ổn định, không bị bùng nổ
         is_weights /= is_weights.max()

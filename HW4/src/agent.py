@@ -11,7 +11,7 @@ D3QN Agent combining:
        more frequently (Schaul et al., 2016).
 """
 
-# Double DQN
+# Double DQN         
 
 import torch
 import torch.nn as nn

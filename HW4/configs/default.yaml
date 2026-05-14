@@ -19,7 +19,7 @@ env:
 # --- Agent ---
 agent:
   gamma: 0.99                       # Discount factor γ
-  learning_rate: 1.0e-4             # Adam learning rate (DeepMind standard)
+  learning_rate: 1.0e-4             # Adam learning rate (DeepMind standard) = 10^-4 = 0.0001
   batch_size: 32                    # Mini-batch size
   target_update_freq: 10000         # Hard target update frequency (steps)
   tau: 1.0                          # Soft update coefficient (1.0 = hard update)
